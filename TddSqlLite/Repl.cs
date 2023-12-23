@@ -3,14 +3,14 @@ namespace TddSqlLite;
 public class Repl
 {
     private readonly IConsoleWriteLineWrapper _writeLine;
-    private readonly List<string> _commands;
+    private readonly Stack<string> _commands = new();
 
     public Repl(IConsoleWriteLineWrapper writeLine)
     {
         _writeLine = writeLine;
     }
 
-    public Repl(IConsoleWriteLineWrapper writeLine, List<string> commands)
+    public Repl(IConsoleWriteLineWrapper writeLine, Stack<string> commands)
     {
         _writeLine = writeLine;
         _commands = commands;
@@ -22,9 +22,20 @@ public class Repl
                          "Enter \".help\" for usage hints.\nConnected to a transient " +
                          "in-memory database.\nUse \".open FILENAME\" to reopen on a persistent " +
                          "database.");
-        foreach (var command in _commands)
+        bool waitingCommand = true;
+        do
         {
-            _writeLine.Print("sqlite> " + command);
-        }
+            var tryPeek = _commands.TryPeek(out var result);
+            if (tryPeek)
+            {
+                var command = _commands.Pop();
+                _writeLine.Print("sqlite> " + command);
+            }
+            else
+            {
+                _writeLine.Print("sqlite> ");
+                waitingCommand = false;
+            }
+        } while (_commands.Count > 0 || waitingCommand);
     }
 }

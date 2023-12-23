@@ -4,14 +4,14 @@ namespace Tests;
 
 public class FakeConsoleWriteLineWrapper : IConsoleWriteLineWrapper
 {
-    private string _message;
+    private readonly Stack<string> _message = new();
 
     public void Print(string message)
     {
-        _message = message;
+        _message.Push(message);
     }
 
-    public string RetrieveMessage()
+    public Stack<string> RetrieveMessage()
     {
         return _message;
     }
