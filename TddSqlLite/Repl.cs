@@ -1,8 +1,11 @@
+using Tests;
+
 namespace TddSqlLite;
 
 public class Repl
 {
     private readonly IConsoleWriteLineWrapper _writeLine;
+    private readonly IConsoleInputWrapper _consoleInputWrapper;
     private readonly Stack<string> _commands = new();
 
     public Repl(IConsoleWriteLineWrapper writeLine)
@@ -14,6 +17,13 @@ public class Repl
     {
         _writeLine = writeLine;
         _commands = commands;
+    }
+
+    public Repl(IConsoleWriteLineWrapper writeLine, IConsoleInputWrapper consoleInputWrapper)
+    {
+        _writeLine = writeLine;
+        _consoleInputWrapper = consoleInputWrapper;
+        _commands = consoleInputWrapper.RetrieveCommands();
     }
 
     public void Start()
