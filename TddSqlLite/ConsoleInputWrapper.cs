@@ -4,19 +4,19 @@ namespace TddSqlLite;
 
 public class ConsoleInputWrapper : IConsoleInputWrapper
 {
-    public readonly Stack<string> ConsoleInput = new();
+    private readonly Stack<string> _consoleInput = new();
     public void WaitForInput()
     {
         var consoleInput = Console.ReadLine();
         if (!string.IsNullOrEmpty(consoleInput) && consoleInput != ".exit")
         {
-            ConsoleInput.Push(consoleInput);
+            _consoleInput.Push(consoleInput);
         }
     }
 
     public Stack<string> RetrieveCommands()
     {
-        var notEmpty = ConsoleInput.TryPop(out var command);
-        return ConsoleInput;
+        var notEmpty = _consoleInput.TryPop(out var command);
+        return _consoleInput;
     }
 }
