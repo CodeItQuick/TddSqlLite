@@ -38,8 +38,8 @@ public class Repl
             var tryPeek = _commands.TryPeek(out var result);
             if (tryPeek)
             {
-                var command = _commands.Pop();
-                _writeLine.Print("sqlite> " + command);
+                _writeLine.Print("sqlite> ");
+                _consoleInputWrapper.WaitForInput();
             }
             else
             {

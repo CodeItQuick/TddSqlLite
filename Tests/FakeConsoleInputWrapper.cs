@@ -1,6 +1,6 @@
 namespace Tests;
 
-public class FakeConsoleInputWrapper
+public class FakeConsoleInputWrapper : IConsoleInputWrapper
 {
     private readonly Stack<string> _commands;
 
@@ -11,7 +11,7 @@ public class FakeConsoleInputWrapper
 
     public void WaitForInput()
     {
-        
+        _commands.Pop();
     }
 
     public Stack<string> RetrieveCommands()

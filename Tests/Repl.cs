@@ -23,7 +23,7 @@ public class Repl
         var writeLineWrapper = new FakeConsoleWriteLineWrapper();
         var commands = new Stack<string>();
         commands.Push("create table users (id int, username varchar(255), email varchar(255));");
-        var repl = new TddSqlLite.Repl(writeLineWrapper, commands);
+        var repl = new TddSqlLite.Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands));
 
         repl.Start();
 
@@ -32,7 +32,7 @@ public class Repl
                         "Enter \".help\" for usage hints.\nConnected to a transient " +
                         "in-memory database.\nUse \".open FILENAME\" to reopen on a persistent " +
                         "database.", retrieveMessage);
-        Assert.Contains("sqlite> " + "create table users (id int, username varchar(255), email varchar(255));", retrieveMessage);
+        Assert.Contains("sqlite> ", retrieveMessage);
         Assert.Equal(3, retrieveMessage.Count);
     }
 }
