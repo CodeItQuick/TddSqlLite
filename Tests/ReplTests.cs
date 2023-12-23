@@ -2,7 +2,7 @@ using TddSqlLite;
 
 namespace Tests;
 
-public class Repl
+public class ReplTests
 {
     private const string IntroText = "SQLite version 3.16.0 2016-11-04 19:09:39" +
                                      "Enter \".help\" for usage hints.\nConnected to a transient " +
