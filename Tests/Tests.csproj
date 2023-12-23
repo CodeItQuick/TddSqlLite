@@ -26,4 +26,8 @@
       <ProjectReference Include="..\TddSqlLite\TddSqlLite.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="obj\" />
+    </ItemGroup>
+
 </Project>
