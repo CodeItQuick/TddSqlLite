@@ -11,7 +11,11 @@ public class FakeConsoleInputWrapper : IConsoleInputWrapper
 
     public void WaitForInput()
     {
-        _commands.Pop();
+        var tryPeek = _commands.TryPeek(out var command);
+        if (tryPeek && command != "")
+        {
+            _commands.Pop();
+        }
     }
 
     public Stack<string> RetrieveCommands()

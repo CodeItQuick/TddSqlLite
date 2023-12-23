@@ -13,12 +13,6 @@ public class Repl
         _writeLine = writeLine;
     }
 
-    public Repl(IConsoleWriteLineWrapper writeLine, Stack<string> commands)
-    {
-        _writeLine = writeLine;
-        _commands = commands;
-    }
-
     public Repl(IConsoleWriteLineWrapper writeLine, IConsoleInputWrapper consoleInputWrapper)
     {
         _writeLine = writeLine;
@@ -32,20 +26,20 @@ public class Repl
                          "Enter \".help\" for usage hints.\nConnected to a transient " +
                          "in-memory database.\nUse \".open FILENAME\" to reopen on a persistent " +
                          "database.");
-        bool waitingCommand = true;
         do
         {
-            var tryPeek = _commands.TryPeek(out var result);
-            if (tryPeek)
+            _writeLine.Print("sqlite> ");
+            var currentCommandStack = _consoleInputWrapper.RetrieveCommands();
+            var peek = currentCommandStack.TryPeek(out var command);
+            var validCommands = new List<string>();
+            if (command is "" or ".exit")
             {
-                _writeLine.Print("sqlite> ");
-                _consoleInputWrapper.WaitForInput();
-            }
-            else
+                currentCommandStack.Pop();
+            } else if (peek && !validCommands.Contains(command ?? ""))
             {
-                _writeLine.Print("sqlite> ");
-                waitingCommand = false;
+                _writeLine.Print($"Unrecognized command '{command}'.");
             }
-        } while (_commands.Count > 0 || waitingCommand);
+            _consoleInputWrapper.WaitForInput();
+        } while (_commands.Count > 0);
     }
 }

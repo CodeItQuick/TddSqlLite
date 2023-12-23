@@ -2,6 +2,6 @@
 
 using TddSqlLite;
 
-var repl = new Repl(new ConsoleWriteLineWrapper());
+var repl = new Repl(new ConsoleWriteLineWrapper(), new ConsoleInputWrapper());
 
 repl.Start();
