@@ -68,6 +68,27 @@ public class Repl
         }, retrieveMessage.ToList());
     }
     [Fact]
+    public void CanStartReplWithSelectCommands()
+    {
+        var writeLineWrapper = new FakeConsoleWriteLineWrapper();
+        var commands = new Stack<string>();
+        commands.Push(".exit"); // exit
+        commands.Push("SELECT * FROM USERS;");
+        var repl = new TddSqlLite.Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands));
+
+        repl.Start();
+
+        var retrieveMessage = writeLineWrapper.RetrieveMessage();
+        Assert.Contains(IntroText, retrieveMessage);
+        Assert.Equal(3, retrieveMessage.Count);
+        Assert.Equivalent(new List<string>()
+        {
+            "sqlite> ", // enter .exit
+            "sqlite> ", // enter create statement
+            IntroText // intro text
+        }, retrieveMessage.ToList());
+    }
+    [Fact]
     public void CanRecognizeWhenCommandInvalid()
     {
         var writeLineWrapper = new FakeConsoleWriteLineWrapper();

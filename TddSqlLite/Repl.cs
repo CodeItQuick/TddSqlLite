@@ -16,14 +16,10 @@ public class Repl
     private enum STATEMENTS
     {
         CREATE,
-        INSERT
+        INSERT,
+        SELECT
     };
 
-
-    public Repl(IConsoleWriteLineWrapper writeLine)
-    {
-        _writeLine = writeLine;
-    }
 
     public Repl(IConsoleWriteLineWrapper writeLine, IConsoleInputWrapper consoleInputWrapper)
     {
@@ -45,43 +41,59 @@ public class Repl
             var peek = currentCommandStack.TryPeek(out var command);
             if (command.StartsWith("."))
             {
-                var metaCommand = MetaCommands(command, currentCommandStack);
-                if (metaCommand == META_COMMANDS.EXIT)
-                {
-                    currentCommandStack.Pop();
-                    continue;
-                }
-
-                if (metaCommand == META_COMMANDS.UNRECOGNIZED_COMMAND)
-                {
-                    _writeLine.Print($"Unrecognized command '{command}'.");
-                    continue;
-                }
+                var metaCommand = MetaCommands(command);
+                ExecuteMetaCommand(metaCommand, currentCommandStack, command);
+                continue;
             }
 
-            var firstCommand = command.Split(" ").FirstOrDefault();
-            var tryParseStatement = Enum.TryParse<STATEMENTS>(firstCommand, out var statement);
-            if (tryParseStatement)
-            {
-                if (statement == STATEMENTS.CREATE)
-                {
-                    
-                }
-
-                if (statement == STATEMENTS.INSERT)
-                {
-                    
-                }
-            }
-            else
+            var tryParseStatement = PrepareStatement(command, out var statement);
+            if (!tryParseStatement)
             {
                 _writeLine.Print($"Unrecognized command '{command}'.");
+            }
+            else 
+            {
+                ExecuteStatement(statement);
             }
             _consoleInputWrapper.WaitForInput();
         } while (_commands.Count > 0);
     }
 
-    private META_COMMANDS MetaCommands(string command, Stack<string> currentCommandStack)
+    private void ExecuteStatement(STATEMENTS statement)
+    {
+        switch (statement)
+        {
+            case STATEMENTS.CREATE:
+                break;
+            case STATEMENTS.INSERT:
+                break;
+            case STATEMENTS.SELECT:
+                break;
+        }
+    }
+
+    private static bool PrepareStatement(string command, out STATEMENTS statement)
+    {
+        var firstCommand = command.Split(" ").FirstOrDefault();
+        var tryParseStatement = Enum.TryParse(firstCommand, out statement);
+        return tryParseStatement;
+    }
+
+    private void ExecuteMetaCommand(META_COMMANDS metaCommand, Stack<string> currentCommandStack, string command)
+    {
+        switch (metaCommand)
+        {
+            case META_COMMANDS.EXIT:
+                currentCommandStack.Pop();
+                break;
+            case META_COMMANDS.UNRECOGNIZED_COMMAND:
+            default:
+                _writeLine.Print($"Unrecognized command '{command}'.");
+                break;
+        }
+    }
+
+    private META_COMMANDS MetaCommands(string command)
     {
         if (command is ".exit")
         {
