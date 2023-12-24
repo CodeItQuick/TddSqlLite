@@ -13,6 +13,12 @@ public class Repl
         UNRECOGNIZED_COMMAND
     }
 
+    private enum PREPARE_STATEMENTS
+    {
+        SUCCESS,
+        SYNTAX_ERROR,
+        UNRECOGNIZED_STATEMENT
+    }
     private enum STATEMENTS
     {
         CREATE,
@@ -47,14 +53,19 @@ public class Repl
             }
 
             var tryParseStatement = PrepareStatement(command, out var statement);
-            if (!tryParseStatement)
-            {
-                _writeLine.Print($"Unrecognized command '{command}'.");
-            }
-            else 
+            if (tryParseStatement == PREPARE_STATEMENTS.SUCCESS)
             {
                 ExecuteStatement(statement);
             }
+            else if (tryParseStatement == PREPARE_STATEMENTS.SYNTAX_ERROR)
+            {
+                _writeLine.Print("Syntax error. Could not parse statement.\n");
+            }
+            else
+            {
+                _writeLine.Print($"Unrecognized keyword at start of '{command}'.");
+            }
+
             _consoleInputWrapper.WaitForInput();
         } while (_commands.Count > 0);
     }
@@ -72,11 +83,19 @@ public class Repl
         }
     }
 
-    private static bool PrepareStatement(string command, out STATEMENTS statement)
+    private static PREPARE_STATEMENTS PrepareStatement(string command, out STATEMENTS statement)
     {
-        var firstCommand = command.Split(" ").FirstOrDefault();
+        var commands = command.Split(" ");
+        var firstCommand = commands.FirstOrDefault();
         var tryParseStatement = Enum.TryParse(firstCommand, out statement);
-        return tryParseStatement;
+        if (statement == STATEMENTS.INSERT)
+        {
+            if (commands.Length < 3)
+            {
+                return PREPARE_STATEMENTS.SYNTAX_ERROR;
+            }
+        }
+        return tryParseStatement ? PREPARE_STATEMENTS.SUCCESS : PREPARE_STATEMENTS.UNRECOGNIZED_STATEMENT;
     }
 
     private void ExecuteMetaCommand(META_COMMANDS metaCommand, Stack<string> currentCommandStack, string command)
@@ -84,6 +103,7 @@ public class Repl
         switch (metaCommand)
         {
             case META_COMMANDS.EXIT:
+                // pop the last command off the stack to exit the loop
                 currentCommandStack.Pop();
                 break;
             case META_COMMANDS.UNRECOGNIZED_COMMAND:
