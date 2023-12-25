@@ -6,7 +6,7 @@ public class Repl
 {
     private readonly IConsoleWriteLineWrapper _writeLine;
     private readonly IConsoleInputWrapper _consoleInputWrapper;
-    private readonly Stack<string> _commands = new();
+    private Stack<string> _commands = new();
     private enum META_COMMANDS
     {
         EXIT,
@@ -18,6 +18,11 @@ public class Repl
         SUCCESS,
         SYNTAX_ERROR,
         UNRECOGNIZED_STATEMENT
+    }
+    private enum EXECUTE
+    {
+        SUCCESS,
+        TABLE_FULL
     }
     private enum STATEMENTS
     {
@@ -31,7 +36,6 @@ public class Repl
     {
         _writeLine = writeLine;
         _consoleInputWrapper = consoleInputWrapper;
-        _commands = consoleInputWrapper.RetrieveCommands();
     }
 
     public void Start()
@@ -43,48 +47,76 @@ public class Repl
         do
         {
             _writeLine.Print("sqlite> ");
-            var currentCommandStack = _consoleInputWrapper.RetrieveCommands();
-            var peek = currentCommandStack.TryPeek(out var command);
-            if (command.StartsWith("."))
+            _consoleInputWrapper.WaitForInput();
+            var currentCommandStack = _consoleInputWrapper.RetrieveRunCommands();
+            var peekSuccess = currentCommandStack.TryPeek(out var command);
+            if (peekSuccess && command != null)
+            {
+                _commands.Push(command);
+            }
+
+            if (command != null && command.StartsWith("."))
             {
                 var metaCommand = MetaCommands(command);
-                ExecuteMetaCommand(metaCommand, currentCommandStack, command);
-                continue;
+                switch (metaCommand)
+                {
+                    case META_COMMANDS.EXIT:
+                        // pop the last command off the stack to exit the loop
+                        _commands = new Stack<string>();
+                        continue;
+                    case META_COMMANDS.UNRECOGNIZED_COMMAND:
+                    default:
+                        _writeLine.Print($"Unrecognized command '{command}'.");
+                        continue;
+                }
             }
 
             var tryParseStatement = PrepareStatement(command, out var statement);
-            if (tryParseStatement == PREPARE_STATEMENTS.SUCCESS)
+            switch (tryParseStatement)
             {
-                ExecuteStatement(statement);
-            }
-            else if (tryParseStatement == PREPARE_STATEMENTS.SYNTAX_ERROR)
-            {
-                _writeLine.Print("Syntax error. Could not parse statement.\n");
-            }
-            else
-            {
-                _writeLine.Print($"Unrecognized keyword at start of '{command}'.");
+                case PREPARE_STATEMENTS.SUCCESS:
+                    break;
+                case PREPARE_STATEMENTS.SYNTAX_ERROR:
+                    _writeLine.Print("Syntax error. Could not parse statement.\n");
+                    continue;
+                case PREPARE_STATEMENTS.UNRECOGNIZED_STATEMENT:
+                    _writeLine.Print($"Unrecognized keyword at start of '{command}'.");
+                    break;
             }
 
-            _consoleInputWrapper.WaitForInput();
+            switch (ExecuteStatement(statement))
+            {
+                case EXECUTE.SUCCESS:
+                    break;
+                case EXECUTE.TABLE_FULL:
+                    break;
+            }
+
         } while (_commands.Count > 0);
     }
 
-    private void ExecuteStatement(STATEMENTS statement)
+    private EXECUTE ExecuteStatement(STATEMENTS statement)
     {
         switch (statement)
         {
             case STATEMENTS.CREATE:
-                break;
+                return EXECUTE.SUCCESS;
             case STATEMENTS.INSERT:
-                break;
+                return EXECUTE.SUCCESS;
             case STATEMENTS.SELECT:
-                break;
+                return EXECUTE.SUCCESS;
+            default:
+                return EXECUTE.TABLE_FULL;
         }
     }
 
-    private static PREPARE_STATEMENTS PrepareStatement(string command, out STATEMENTS statement)
+    private static PREPARE_STATEMENTS? PrepareStatement(string? command, out STATEMENTS statement)
     {
+        if (command == null)
+        {
+            statement = STATEMENTS.CREATE;
+            return null;
+        }
         var commands = command.Split(" ");
         var firstCommand = commands.FirstOrDefault();
         var tryParseStatement = Enum.TryParse(firstCommand, out statement);
@@ -98,28 +130,14 @@ public class Repl
         return tryParseStatement ? PREPARE_STATEMENTS.SUCCESS : PREPARE_STATEMENTS.UNRECOGNIZED_STATEMENT;
     }
 
-    private void ExecuteMetaCommand(META_COMMANDS metaCommand, Stack<string> currentCommandStack, string command)
-    {
-        switch (metaCommand)
-        {
-            case META_COMMANDS.EXIT:
-                // pop the last command off the stack to exit the loop
-                currentCommandStack.Pop();
-                break;
-            case META_COMMANDS.UNRECOGNIZED_COMMAND:
-            default:
-                _writeLine.Print($"Unrecognized command '{command}'.");
-                break;
-        }
-    }
-
     private META_COMMANDS MetaCommands(string command)
     {
-        if (command is ".exit")
+        switch (command)
         {
-            return META_COMMANDS.EXIT;
+            case ".exit":
+                return META_COMMANDS.EXIT;
+            default:
+                return META_COMMANDS.UNRECOGNIZED_COMMAND;
         }
-
-        return META_COMMANDS.UNRECOGNIZED_COMMAND;
     }
 }
