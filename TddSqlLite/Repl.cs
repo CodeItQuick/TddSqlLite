@@ -49,13 +49,10 @@ public class Repl
             _writeLine.Print("sqlite> ");
             _consoleInputWrapper.WaitForInput();
             var currentCommandStack = _consoleInputWrapper.RetrieveRunCommands();
-            var peekSuccess = currentCommandStack.TryPeek(out var command);
-            if (peekSuccess && command != null)
-            {
-                _commands.Push(command);
-            }
+            var command = currentCommandStack.Peek();
+            _commands.Push(command);
 
-            if (command != null && command.StartsWith("."))
+            if (command.StartsWith("."))
             {
                 var metaCommand = MetaCommands(command);
                 switch (metaCommand)
@@ -88,8 +85,6 @@ public class Repl
             {
                 case EXECUTE.SUCCESS:
                     break;
-                case EXECUTE.TABLE_FULL:
-                    break;
             }
 
         } while (_commands.Count > 0);
@@ -110,22 +105,18 @@ public class Repl
         }
     }
 
-    private static PREPARE_STATEMENTS? PrepareStatement(string? command, out STATEMENTS statement)
+    private static PREPARE_STATEMENTS PrepareStatement(string command, out STATEMENTS statement)
     {
-        if (command == null)
-        {
-            statement = STATEMENTS.CREATE;
-            return null;
-        }
         var commands = command.Split(" ");
         var firstCommand = commands.FirstOrDefault();
         var tryParseStatement = Enum.TryParse(firstCommand, out statement);
-        if (statement == STATEMENTS.INSERT)
+        if (statement != STATEMENTS.INSERT)
         {
-            if (commands.Length < 3)
-            {
-                return PREPARE_STATEMENTS.SYNTAX_ERROR;
-            }
+            return tryParseStatement ? PREPARE_STATEMENTS.SUCCESS : PREPARE_STATEMENTS.UNRECOGNIZED_STATEMENT;
+        }
+        if (commands.Length < 3)
+        {
+            return PREPARE_STATEMENTS.SYNTAX_ERROR;
         }
         return tryParseStatement ? PREPARE_STATEMENTS.SUCCESS : PREPARE_STATEMENTS.UNRECOGNIZED_STATEMENT;
     }

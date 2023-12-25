@@ -4,7 +4,7 @@ namespace TddSqlLite;
 
 public class ConsoleInputWrapper : IConsoleInputWrapper
 {
-    protected readonly Stack<string> _consoleInput = new();
+    private readonly Stack<string> _consoleInput = new();
     protected string? _currentCommand;
 
     public virtual string? WaitForInput()
