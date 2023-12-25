@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using TddSqlLite;
 
 namespace Tests;
@@ -19,12 +20,13 @@ public class ReplTests
         var repl = new TddSqlLite.Repl(writeLineWrapper, fakeConsoleInputWrapper);
 
         repl.Start();
-        
+
         Assert.Contains("SQLite version 3.16.0 2016-11-04 19:09:39" +
-                     "Enter \".help\" for usage hints.\nConnected to a transient " +
-                     "in-memory database.\nUse \".open FILENAME\" to reopen on a persistent " +
-                     "database.", writeLineWrapper.RetrieveMessage());
+                        "Enter \".help\" for usage hints.\nConnected to a transient " +
+                        "in-memory database.\nUse \".open FILENAME\" to reopen on a persistent " +
+                        "database.", writeLineWrapper.RetrieveMessage());
     }
+
     [Fact]
     public void CanStartReplWithCREATECommands()
     {
@@ -45,7 +47,8 @@ public class ReplTests
             "sqlite> ", // enter create statement
             IntroText // intro text
         }, retrieveMessage.ToList());
-    } 
+    }
+
     [Fact]
     public void CanStartReplWithTwoStatementInsertCommandCreatesSyntaxError()
     {
@@ -68,6 +71,7 @@ public class ReplTests
             IntroText // intro text
         }, retrieveMessage.ToList());
     }
+
     [Fact]
     public void CanStartReplWithTwoStatementInsertCommandCreatesTable()
     {
@@ -89,6 +93,7 @@ public class ReplTests
             IntroText // intro text
         }, retrieveMessage.ToList());
     }
+
     [Fact]
     public void CanStartReplWithSelectCommands()
     {
@@ -110,6 +115,7 @@ public class ReplTests
             IntroText // intro text
         }, retrieveMessage.ToList());
     }
+
     [Fact]
     public void CanRecognizeWhenKeywordInvalid()
     {
@@ -130,6 +136,7 @@ public class ReplTests
         Assert.Equal(2, retrieveMessage.Count(x => x == "sqlite> ")); // two of these
         Assert.Equal(4, retrieveMessage.Count);
     }
+
     [Fact]
     public void CanRecognizeWhenInvalidMetaCommand()
     {
@@ -150,6 +157,7 @@ public class ReplTests
         Assert.Equal(2, retrieveMessage.Count(x => x == "sqlite> ")); // two of these
         Assert.Equal(4, retrieveMessage.Count);
     }
+
     [Fact]
     public void CanRecognizeWhenCommandInvalid()
     {
@@ -169,5 +177,65 @@ public class ReplTests
         Assert.Contains("Unrecognized keyword at start of 'invalid command'.", retrieveMessage);
         Assert.Equal(2, retrieveMessage.Count(x => x == "sqlite> ")); // two of these
         Assert.Equal(4, retrieveMessage.Count);
+    }
+
+    [Fact]
+    public void CanInsertRowsIntoTable()
+    {
+        var table = new Table();
+        var row = new Row() { Id = 1, email = "test@user.com", username = "test_user" };
+        var page = new Page() { PageNum = 0, Rows = Array.Empty<Row>()};
+        table.SerializeRow(row, page);
+
+        Assert.Equivalent(new Row()
+            {
+                Id = 1, email = "test@user.com", username = "test_user"
+            },
+            table.DeserializeRow(page, row));
+    }
+    [Fact]
+    public void CanInsertRowsIntoExistingPage()
+    {
+        var table = new Table();
+        var row1 = new Row()
+        {
+            Id = 1, email = "test@user.com", username = "test_user"
+        };
+        var row2 = new Row() { Id = 2, email = "test@user.com", username = "test_user" };
+        var page = new Page() { 
+            PageNum = 0, 
+            Rows = new []
+            { 
+                row1 
+            }
+        };
+        table.SerializeRow(row2, page);
+
+        Assert.Equivalent(
+            new Row()
+            {
+                Id = 1, email = "test@user.com", username = "test_user"
+            },
+            table.DeserializeRow(page, row1));
+        Assert.Equivalent(
+            new Row()
+            {
+                Id = 2, email = "test@user.com", username = "test_user"
+            },
+            table.DeserializeRow(page, row2));
+    }
+    [Fact]
+    public void KnowsWhenPageFull()
+    {
+        Assert.Fail("next test");
+    }
+    [Fact]
+    public void TableHasMaxPageNumber()
+    {
+        var table = new Table();
+        var row = new Row() { Id = 1, email = "test@user.com", username = "test_user" };
+        var page = new Page() { PageNum = 101 };
+
+        Assert.Throws<Exception>(() => table.SerializeRow(row, page));
     }
 }
