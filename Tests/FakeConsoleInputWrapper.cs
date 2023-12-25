@@ -1,33 +1,21 @@
+using TddSqlLite;
+
 namespace Tests;
 
-public class FakeConsoleInputWrapper : IConsoleInputWrapper
+public class FakeConsoleInputWrapper : ConsoleInputWrapper
 {
     private readonly Stack<string> _commands;
-    private Stack<string> _runCommands = new();
 
     public FakeConsoleInputWrapper(Stack<string> commands)
     {
         _commands = commands;
     }
 
-    public string? WaitForInput()
+    public override string? WaitForInput()
     {
-        var tryPeek = _commands.TryPeek(out var command);
-        if (tryPeek && command != "")
-        {
-            _commands.Pop();
-        }
+        var tryPop = _commands.TryPop(out var command);
+        _currentCommand = command;  
 
-        if (tryPeek && !string.IsNullOrWhiteSpace(command))
-        {
-            _runCommands.Push(command);
-        }
-
-        return command;
-    }
-
-    public Stack<string> RetrieveRunCommands()
-    {
-        return _runCommands;
+        return _currentCommand;
     }
 }
