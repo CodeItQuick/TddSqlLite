@@ -7,6 +7,8 @@ public class Repl
     private readonly IConsoleWriteLineWrapper _writeLine;
     private readonly IConsoleInputWrapper _consoleInputWrapper;
     private Stack<string> _commands = new();
+    private Table _table;
+
     private enum META_COMMANDS
     {
         EXIT,
@@ -36,6 +38,7 @@ public class Repl
     {
         _writeLine = writeLine;
         _consoleInputWrapper = consoleInputWrapper;
+        _table = new Table();
     }
 
     public void Start()
@@ -81,24 +84,46 @@ public class Repl
                     break;
             }
 
-            switch (ExecuteStatement(statement))
+            switch (ExecuteStatement(statement, command))
             {
                 case EXECUTE.SUCCESS:
+                    _writeLine.Print("Executed.");
                     break;
             }
 
         } while (_commands.Count > 0);
     }
 
-    private EXECUTE ExecuteStatement(STATEMENTS statement)
+    private EXECUTE ExecuteStatement(STATEMENTS statement, string command)
     {
         switch (statement)
         {
             case STATEMENTS.CREATE:
                 return EXECUTE.SUCCESS;
             case STATEMENTS.INSERT:
+                var commands = command.Split(" ");
+                var currentPageRows = _table.DeserializePage(new Page() { PageNum = 0 });
+                _table.SerializeRow(
+                    new Row()
+                {
+                    Id = Int32.Parse(commands.Skip(1).First()),
+                    username = commands.Skip(2).First(),
+                    email = commands.Skip(3).First(),
+                }, 
+                    new Page()
+                {
+                    PageNum = 0, 
+                    Rows = currentPageRows
+                } );
                 return EXECUTE.SUCCESS;
             case STATEMENTS.SELECT:
+                
+                _writeLine.Print("Id\tusername\temail");
+                var rows = _table.DeserializePage(new Page() { PageNum = 0 });
+                foreach (var row in rows)
+                {
+                    _writeLine.Print($"{row.Id}\t{row.username}\t{row.email}");
+                }
                 return EXECUTE.SUCCESS;
             default:
                 return EXECUTE.TABLE_FULL;

@@ -16,12 +16,33 @@ public class Table
         {
             throw new Exception("This page is full");
         }
-        page.Rows = page.Rows.Append(row).ToArray();
-        _pages = _pages.Append(page).ToArray();
+        if (_pages.Length == 0)
+        {
+            _pages = new[]
+            {
+                new Page()
+                {
+                    PageNum = 0,
+                    Rows = new []{ row }
+                }
+            };
+        }
+        _pages[page.PageNum].Rows = _pages[page.PageNum].Rows.Append(row).ToArray();
     }
 
     public Row DeserializeRow(Page page, Row row)
     {
         return _pages[page.PageNum].Rows.First(x => x.Id == row.Id);
+    }
+
+    public Row[] DeserializePage(Page page)
+    {
+        if (page.PageNum < _pages.Length)
+        {
+            var currentPage = _pages[page.PageNum];
+            return currentPage.Rows.ToArray();
+        }
+
+        return Array.Empty<Row>();
     }
 }
