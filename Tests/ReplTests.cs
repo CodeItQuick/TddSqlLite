@@ -17,7 +17,7 @@ public class ReplTests
         var commands = new Stack<string>();
         commands.Push(".exit");
         var fakeConsoleInputWrapper = new FakeConsoleInputWrapper(commands);
-        var repl = new TddSqlLite.Repl(writeLineWrapper, fakeConsoleInputWrapper);
+        var repl = new Repl(writeLineWrapper, fakeConsoleInputWrapper);
 
         repl.Start();
 
@@ -34,7 +34,7 @@ public class ReplTests
         var commands = new Stack<string>();
         commands.Push(".exit"); // exit
         commands.Push("CREATE table users (id int, username varchar(255), email varchar(255));");
-        var repl = new TddSqlLite.Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands));
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands));
 
         repl.Start();
 
@@ -57,7 +57,7 @@ public class ReplTests
         var commands = new Stack<string>();
         commands.Push(".exit"); // exit
         commands.Push("INSERT 1");
-        var repl = new TddSqlLite.Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands));
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands));
 
         repl.Start();
 
@@ -80,7 +80,7 @@ public class ReplTests
         var commands = new Stack<string>();
         commands.Push(".exit"); // exit
         commands.Push("INSERT 1 cstack foo@bar.com");
-        var repl = new TddSqlLite.Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands));
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands));
 
         repl.Start();
 
@@ -103,7 +103,7 @@ public class ReplTests
         commands.Push(".exit"); // exit
         commands.Push("SELECT * FROM cstack");
         commands.Push("INSERT 1 cstack foo@bar.com");
-        var repl = new TddSqlLite.Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands));
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands));
 
         repl.Start();
 
@@ -120,7 +120,7 @@ public class ReplTests
             "sqlite> ", // enter insert statement
             IntroText // intro text
         }, retrieveMessage.ToList());
-        Assert.Equal(9, retrieveMessage.Count);
+        Assert.Equal(8, retrieveMessage.Count);
     }
 
     [Fact]
@@ -133,7 +133,7 @@ public class ReplTests
         commands.Push("INSERT 3 dstack foo3@bar.com");
         commands.Push("INSERT 2 astack foo2@bar.com");
         commands.Push("INSERT 1 cstack foo1@bar.com");
-        var repl = new TddSqlLite.Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands));
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands));
 
         repl.Start();
 
@@ -150,7 +150,7 @@ public class ReplTests
             "sqlite> ", // enter create statement
             IntroText // intro text
         }, retrieveMessage.ToList());
-        Assert.Equal(15, retrieveMessage.Count);
+        Assert.Equal(14, retrieveMessage.Count);
     }
 
     [Fact]
@@ -160,7 +160,7 @@ public class ReplTests
         var commands = new Stack<string>();
         commands.Push(".exit"); // exit
         commands.Push("invalid command");
-        var repl = new TddSqlLite.Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands));
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands));
 
         repl.Start();
 
@@ -181,7 +181,7 @@ public class ReplTests
         var commands = new Stack<string>();
         commands.Push(".exit"); // exit
         commands.Push(".invalidcommand");
-        var repl = new TddSqlLite.Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands));
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands));
 
         repl.Start();
 
@@ -202,7 +202,7 @@ public class ReplTests
         var commands = new Stack<string>();
         commands.Push(".exit"); // exit
         commands.Push("invalid command");
-        var repl = new TddSqlLite.Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands));
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands));
 
         repl.Start();
 
@@ -222,7 +222,7 @@ public class ReplTests
         var table = new Table();
         var row = new Row() { Id = 1, email = "test@user.com", username = "test_user" };
         var page = new Page() { PageNum = 0, Rows = Array.Empty<Row>()};
-        table.SerializeRow(row, page);
+        table.SerializeRow(row);
 
         Assert.Equivalent(new Row()
             {
@@ -243,8 +243,8 @@ public class ReplTests
             PageNum = 0, 
             Rows = Array.Empty<Row>()
         };
-        table.SerializeRow(row1, page);
-        table.SerializeRow(row2, page);
+        table.SerializeRow(row1);
+        table.SerializeRow(row2);
 
         Assert.Equivalent(
             new Row()
@@ -272,8 +272,8 @@ public class ReplTests
             PageNum = 0, 
             Rows = Array.Empty<Row>()
         };
-        table.SerializeRow(row1, page);
-        table.SerializeRow(row2, page);
+        table.SerializeRow(row1);
+        table.SerializeRow(row2);
 
         Assert.Equivalent(
             new Row[] {
@@ -289,27 +289,41 @@ public class ReplTests
             table.DeserializePage(page));
     }
     [Fact]
-    public void KnowsWhenPageFull()
+    public void AddsToNextPageWhenFull()
     {
         var table = new Table();
-        var row = new Row() { Id = 1, email = "test@user.com", username = "test_user" };
         var rows = Enumerable
-            .Range(0, 1001)
+            .Range(0, 15)
             .Select(x => new Row()
             {
                 Id = x, email = "test@user.com", username = "test_user"
             })
             .ToArray();
-        var page = new Page() { PageNum = 0, Rows = rows};
-        Assert.Throws<Exception>(() => table.SerializeRow(row, page));
+        foreach (var row in rows)
+        {
+            table.SerializeRow(row);
+        }
+        
+        Assert.Equal(14, table.DeserializePage(new Page() { PageNum = 0 }).Length);
+        Assert.Single(table.DeserializePage(new Page() { PageNum = 1 }));
     }
     [Fact]
-    public void TableHasMaxPageNumber()
+    public void AddsToNextPageTwiceWhenFull()
     {
         var table = new Table();
-        var row = new Row() { Id = 1, email = "test@user.com", username = "test_user" };
-        var page = new Page() { PageNum = 101 };
-
-        Assert.Throws<Exception>(() => table.SerializeRow(row, page));
+        var rows = Enumerable
+            .Range(0, 16)
+            .Select(x => new Row()
+            {
+                Id = x, email = "test@user.com", username = "test_user"
+            })
+            .ToArray();
+        foreach (var row in rows)
+        {
+            table.SerializeRow(row);
+        }
+        
+        Assert.Equal(14, table.DeserializePage(new Page() { PageNum = 0 }).Length);
+        Assert.Equal(2, table.DeserializePage(new Page() { PageNum = 1 }).Length);
     }
 }

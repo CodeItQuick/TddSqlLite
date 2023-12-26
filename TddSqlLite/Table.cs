@@ -2,32 +2,32 @@ namespace TddSqlLite;
 
 public class Table
 {
-    private Page[] _pages = Array.Empty<Page>();
+    private Page[] _pages  = {
+        new()
+        {
+            PageNum = 0,
+            Rows = Array.Empty<Row>()
+        }
+    };
+    private const int MAX_ROWS_PER_PAGE = 14;
     private const int MAX_PAGES = 100;
 
-    public void SerializeRow(Row row, Page page)
+    public void SerializeRow(Row row)
     {
-        if (page.PageNum > MAX_PAGES)
+        if (_pages.Length == MAX_PAGES)
         {
-            throw new Exception("Max page size of table exceeded");
+            throw new Exception("Table Full");
         }
-
-        if (page.Rows.Length > 1000)
+        if (_pages[^1].Rows.Length == MAX_ROWS_PER_PAGE)
         {
-            throw new Exception("This page is full");
-        }
-        if (_pages.Length == 0)
-        {
-            _pages = new[]
-            {
+            _pages = _pages.Append(
                 new Page()
-                {
-                    PageNum = 0,
-                    Rows = new []{ row }
-                }
-            };
+            {
+                PageNum = _pages.Length - 1, 
+                Rows = Array.Empty<Row>()
+            }).ToArray();
         }
-        _pages[page.PageNum].Rows = _pages[page.PageNum].Rows.Append(row).ToArray();
+        _pages[^1].Rows = _pages[^1].Rows.Append(row).ToArray();
     }
 
     public Row DeserializeRow(Page page, Row row)

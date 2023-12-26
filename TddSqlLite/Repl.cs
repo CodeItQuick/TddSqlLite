@@ -109,11 +109,6 @@ public class Repl
                     Id = Int32.Parse(commands.Skip(1).First()),
                     username = commands.Skip(2).First(),
                     email = commands.Skip(3).First(),
-                }, 
-                    new Page()
-                {
-                    PageNum = 0, 
-                    Rows = currentPageRows
                 } );
                 return EXECUTE.SUCCESS;
             case STATEMENTS.SELECT:
