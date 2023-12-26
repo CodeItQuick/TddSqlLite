@@ -11,6 +11,11 @@ public class Table
         {
             throw new Exception("Max page size of table exceeded");
         }
+
+        if (page.Rows.Length > 1000)
+        {
+            throw new Exception("This page is full");
+        }
         page.Rows = page.Rows.Append(row).ToArray();
         _pages = _pages.Append(page).ToArray();
     }

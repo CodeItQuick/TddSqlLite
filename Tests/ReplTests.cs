@@ -227,7 +227,17 @@ public class ReplTests
     [Fact]
     public void KnowsWhenPageFull()
     {
-        Assert.Fail("next test");
+        var table = new Table();
+        var row = new Row() { Id = 1, email = "test@user.com", username = "test_user" };
+        var rows = Enumerable
+            .Range(0, 1001)
+            .Select(x => new Row()
+            {
+                Id = x, email = "test@user.com", username = "test_user"
+            })
+            .ToArray();
+        var page = new Page() { PageNum = 0, Rows = rows};
+        Assert.Throws<Exception>(() => table.SerializeRow(row, page));
     }
     [Fact]
     public void TableHasMaxPageNumber()
