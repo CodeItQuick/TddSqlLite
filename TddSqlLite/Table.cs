@@ -14,7 +14,8 @@ public class Table
 
     public void SerializeRow(Row row)
     {
-        if (_pages.Length == MAX_PAGES)
+        if (_pages.Length == MAX_PAGES && 
+            _pages[^1].Rows.Length == MAX_ROWS_PER_PAGE)
         {
             throw new Exception("Table Full");
         }

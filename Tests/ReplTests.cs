@@ -308,6 +308,24 @@ public class ReplTests
         Assert.Single(table.DeserializePage(new Page() { PageNum = 1 }));
     }
     [Fact]
+    public void FullTableThrowsError()
+    {
+        var table = new Table();
+        var rows = Enumerable
+            .Range(0, 1400)
+            .Select(x => new Row()
+            {
+                Id = x, email = "test@user.com", username = "test_user"
+            })
+            .ToArray();
+        foreach (var row in rows)
+        {
+            table.SerializeRow(row);
+        }
+        
+        Assert.Equal(14, table.DeserializePage(new Page() { PageNum = 99 }).Length);
+    }
+    [Fact]
     public void AddsToNextPageTwiceWhenFull()
     {
         var table = new Table();
