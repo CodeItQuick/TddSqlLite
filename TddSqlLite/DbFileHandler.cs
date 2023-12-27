@@ -2,22 +2,27 @@ using System.Text;
 
 namespace TddSqlLite;
 
-public class DbWriter : IDbWriter
+public class DbFileHandler : IDbFileHandler
 {
+    private string _fullPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"database.txt");
+
     public void WriteToDb(IEnumerable<string> contents)
     {
-        string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        string fullPath = Path.Combine(path, @"database.txt");
         // wipe file
         File.WriteAllTextAsync(
-            fullPath,
+            _fullPath,
             "",
             Encoding.UTF8).GetAwaiter().GetResult();
         // print new page
         contents.ToList().ForEach(content => 
         File.AppendAllLines(
-            fullPath,
+            _fullPath,
             new List<string>() { content },
             Encoding.UTF8));
+    }
+
+    public string[] ReadFromDb()
+    {
+        return File.ReadAllLines(_fullPath);
     }
 }

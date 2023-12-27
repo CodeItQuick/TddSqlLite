@@ -32,7 +32,7 @@ public class TableTests
     [Fact]
     public void CanInsertRowsIntoTable()
     {
-        var table = new Table(new FakeDbWriter());
+        var table = new Table(new FakeDbFileHandler());
         var row = new Row() { Id = 1, email = "test@user.com", username = "test_user" };
         var page = new Page() { PageNum = 0, Rows = Array.Empty<Row>()};
         table.SerializeRow(row);
@@ -126,7 +126,7 @@ public class TableTests
     [Fact]
     public void CanFillTable()
     {
-        var table = new Table(new FakeDbWriter());
+        var table = new Table(new FakeDbFileHandler());
         var rows = Enumerable
             .Range(1, 1400)
             .Select(x => new Row()
@@ -144,7 +144,7 @@ public class TableTests
     [Fact]
     public void FullTableThrowsError()
     {
-        var table = new Table(new FakeDbWriter());
+        var table = new Table(new FakeDbFileHandler());
         var rows = Enumerable
             .Range(1, 1400)
             .Select(x => new Row()
@@ -165,7 +165,7 @@ public class TableTests
     [Fact]
     public void AddsToNextPageTwiceWhenFull()
     {
-        var table = new Table(new FakeDbWriter());
+        var table = new Table(new FakeDbFileHandler());
         var rows = Enumerable
             .Range(1, 16)
             .Select(x => new Row()
@@ -184,7 +184,7 @@ public class TableTests
     [Fact]
     public void CanSavePageToFile()
     {
-        var fakeDbWriter = new FakeDbWriter();
+        var fakeDbWriter = new FakeDbFileHandler();
         var table = new Table(fakeDbWriter);
         var rows = Enumerable
             .Range(1, 16)
@@ -198,20 +198,11 @@ public class TableTests
             table.SerializeRow(row);
         }
 
-        var rowList = new Row [] { 
-            new()
-            {
-                Id = 1, email = "test@user.com", username = "test_user"
-            }
-        };
-        var initialResult = string.Concat(JsonSerializer.Serialize(rowList));
+        var initialResult = string.Concat(JsonSerializer.Serialize(rows[..14]));
         Assert.Equal(initialResult, fakeDbWriter.RetrieveMessage()[0]);
         var finalResult = string.Concat(
-            JsonSerializer.Serialize(rows[..14]));
-        Assert.Equal(finalResult, fakeDbWriter.RetrieveMessage()[16]);
-        var finalResultTwo = string.Concat(
             JsonSerializer.Serialize(rows[14..16]));
-        Assert.Equal(finalResultTwo, fakeDbWriter.RetrieveMessage()[17]);
+        Assert.Equal(finalResult, fakeDbWriter.RetrieveMessage()[1]);
     }
     [Fact]
     public void InRealFileCanSavePageToFile()
