@@ -215,7 +215,30 @@ public class ReplTests
         Assert.Equal(2, retrieveMessage.Count(x => x == "sqlite> ")); // two of these
         Assert.Equal(5, retrieveMessage.Count);
     }
-
+    [Fact]
+    public void CannotInsertRowWithTooLongUsername()
+    {
+        var table = new Table();
+        var row = new Row() { Id = 1, email = "test@user.com", username = string.Concat(Enumerable.Repeat("a", 256))};
+        var page = new Page() { PageNum = 0, Rows = Array.Empty<Row>()};
+        Assert.Throws<Exception>(() => table.SerializeRow(row));
+    }
+    [Fact]
+    public void CannotInsertRowWithTooLongEmail()
+    {
+        var table = new Table();
+        var row = new Row() { Id = 1, email = string.Concat(Enumerable.Repeat("a", 256)), username = "testuser"};
+        var page = new Page() { PageNum = 0, Rows = Array.Empty<Row>()};
+        Assert.Throws<Exception>(() => table.SerializeRow(row));
+    }
+    [Fact]
+    public void CannotInsertRowWithNegativeId()
+    {
+        var table = new Table();
+        var row = new Row() { Id = -1, email = "test@user.com", username = "testuser"};
+        var page = new Page() { PageNum = 0, Rows = Array.Empty<Row>()};
+        Assert.Throws<Exception>(() => table.SerializeRow(row));
+    }
     [Fact]
     public void CanInsertRowsIntoTable()
     {
@@ -267,7 +290,10 @@ public class ReplTests
         {
             Id = 1, email = "test@user.com", username = "test_user"
         };
-        var row2 = new Row() { Id = 2, email = "test@user.com", username = "test_user" };
+        var row2 = new Row()
+        {
+            Id = 2, email = "test@user.com", username = "test_user"
+        };
         var page = new Page() { 
             PageNum = 0, 
             Rows = Array.Empty<Row>()
@@ -293,7 +319,7 @@ public class ReplTests
     {
         var table = new Table();
         var rows = Enumerable
-            .Range(0, 15)
+            .Range(1, 15)
             .Select(x => new Row()
             {
                 Id = x, email = "test@user.com", username = "test_user"
@@ -308,11 +334,11 @@ public class ReplTests
         Assert.Single(table.DeserializePage(new Page() { PageNum = 1 }));
     }
     [Fact]
-    public void FullTableThrowsError()
+    public void CanFillTable()
     {
         var table = new Table();
         var rows = Enumerable
-            .Range(0, 1400)
+            .Range(1, 1400)
             .Select(x => new Row()
             {
                 Id = x, email = "test@user.com", username = "test_user"
@@ -326,11 +352,32 @@ public class ReplTests
         Assert.Equal(14, table.DeserializePage(new Page() { PageNum = 99 }).Length);
     }
     [Fact]
+    public void FullTableThrowsError()
+    {
+        var table = new Table();
+        var rows = Enumerable
+            .Range(1, 1400)
+            .Select(x => new Row()
+            {
+                Id = x, email = "test@user.com", username = "test_user"
+            })
+            .ToArray();
+        foreach (var row in rows)
+        {
+            table.SerializeRow(row);
+        }
+        
+        Assert.Throws<Exception>(() => table.SerializeRow(new Row()
+        {
+            Id = 1401, email = "test@user.com", username = "test_user"
+        }));
+    }
+    [Fact]
     public void AddsToNextPageTwiceWhenFull()
     {
         var table = new Table();
         var rows = Enumerable
-            .Range(0, 16)
+            .Range(1, 16)
             .Select(x => new Row()
             {
                 Id = x, email = "test@user.com", username = "test_user"

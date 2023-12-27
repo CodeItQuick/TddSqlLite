@@ -14,6 +14,18 @@ public class Table
 
     public void SerializeRow(Row row)
     {
+        if (row.Id < 1)
+        {
+            throw new Exception("Id must be a positive number");
+        }
+        if (row.username.Length > 255)
+        {
+            throw new Exception("username string too many characters.");
+        }
+        if (row.email.Length > 255)
+        {
+            throw new Exception("username string too many characters.");
+        }
         if (_pages.Length == MAX_PAGES && 
             _pages[^1].Rows.Length == MAX_ROWS_PER_PAGE)
         {
