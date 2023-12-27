@@ -213,4 +213,28 @@ public class TableTests
             JsonSerializer.Serialize(rows[14..16]));
         Assert.Equal(finalResultTwo, fakeDbWriter.RetrieveMessage()[17]);
     }
+    [Fact]
+    public void InRealFileCanSavePageToFile()
+    {
+        var table = new Table();
+        var rows = Enumerable
+            .Range(1, 16)
+            .Select(x => new Row()
+            {
+                Id = x, email = "test@user.com", username = "test_user"
+            })
+            .ToArray();
+        foreach (var row in rows)
+        {
+            table.SerializeRow(row);
+        }
+
+        string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        string fullPath = Path.Combine(path, @"database.txt");
+        var readAllLines = File.ReadAllLines(fullPath);
+        Assert.Equal("[{\"Id\":1,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":2,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":3,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":4,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":5,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":6,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":7,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":8,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":9,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":10,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":11,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":12,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":13,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":14,\"username\":\"test_user\",\"email\":\"test@user.com\"}]", 
+            readAllLines.First());
+        Assert.Equal("[{\"Id\":15,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":16,\"username\":\"test_user\",\"email\":\"test@user.com\"}]", 
+            readAllLines.Skip(1).First());
+    }
 }

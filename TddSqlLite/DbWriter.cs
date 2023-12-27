@@ -6,16 +6,18 @@ public class DbWriter : IDbWriter
 {
     public void WriteToDb(IEnumerable<string> contents)
     {
+        string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        string fullPath = Path.Combine(path, @"database.txt");
         // wipe file
         File.WriteAllTextAsync(
-            "database.txt",
+            fullPath,
             "",
             Encoding.UTF8).GetAwaiter().GetResult();
         // print new page
         contents.ToList().ForEach(content => 
-        File.WriteAllLinesAsync(
-            "database.txt",
+        File.AppendAllLines(
+            fullPath,
             new List<string>() { content },
-            Encoding.UTF8).GetAwaiter().GetResult());
+            Encoding.UTF8));
     }
 }
