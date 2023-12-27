@@ -1,3 +1,6 @@
+using System.Text;
+using System.Text.Json;
+
 namespace TddSqlLite;
 
 public class Table
@@ -9,8 +12,19 @@ public class Table
             Rows = Array.Empty<Row>()
         }
     };
+
+    private IDbWriter _dbWriter = new DbWriter();
     private const int MAX_ROWS_PER_PAGE = 14;
     private const int MAX_PAGES = 100;
+
+    public Table()
+    {
+    }
+
+    public Table(IDbWriter dbWriter)
+    {
+        _dbWriter = dbWriter;
+    }
 
     public void SerializeRow(Row row)
     {
@@ -41,6 +55,11 @@ public class Table
             }).ToArray();
         }
         _pages[^1].Rows = _pages[^1].Rows.Append(row).ToArray();
+        var contents = _pages.Select(
+            x =>  
+            string.Concat(JsonSerializer.Serialize(x.Rows)))
+            .ToList();
+        _dbWriter.WriteToDb(contents);
     }
 
     public Row DeserializeRow(Page page, Row row)
@@ -50,12 +69,11 @@ public class Table
 
     public Row[] DeserializePage(Page page)
     {
-        if (page.PageNum < _pages.Length)
+        if (page.PageNum >= _pages.Length)
         {
-            var currentPage = _pages[page.PageNum];
-            return currentPage.Rows.ToArray();
-        }
-
-        return Array.Empty<Row>();
+            return Array.Empty<Row>();
+        };
+        var currentPage = _pages[page.PageNum];
+        return currentPage.Rows.ToArray();
     }
 }

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using TddSqlLite;
 
 namespace Tests;
@@ -31,7 +32,7 @@ public class TableTests
     [Fact]
     public void CanInsertRowsIntoTable()
     {
-        var table = new Table();
+        var table = new Table(new FakeDbWriter());
         var row = new Row() { Id = 1, email = "test@user.com", username = "test_user" };
         var page = new Page() { PageNum = 0, Rows = Array.Empty<Row>()};
         table.SerializeRow(row);
@@ -125,7 +126,7 @@ public class TableTests
     [Fact]
     public void CanFillTable()
     {
-        var table = new Table();
+        var table = new Table(new FakeDbWriter());
         var rows = Enumerable
             .Range(1, 1400)
             .Select(x => new Row()
@@ -143,7 +144,7 @@ public class TableTests
     [Fact]
     public void FullTableThrowsError()
     {
-        var table = new Table();
+        var table = new Table(new FakeDbWriter());
         var rows = Enumerable
             .Range(1, 1400)
             .Select(x => new Row()
@@ -164,7 +165,7 @@ public class TableTests
     [Fact]
     public void AddsToNextPageTwiceWhenFull()
     {
-        var table = new Table();
+        var table = new Table(new FakeDbWriter());
         var rows = Enumerable
             .Range(1, 16)
             .Select(x => new Row()
@@ -179,5 +180,37 @@ public class TableTests
         
         Assert.Equal(14, table.DeserializePage(new Page() { PageNum = 0 }).Length);
         Assert.Equal(2, table.DeserializePage(new Page() { PageNum = 1 }).Length);
+    }
+    [Fact]
+    public void CanSavePageToFile()
+    {
+        var fakeDbWriter = new FakeDbWriter();
+        var table = new Table(fakeDbWriter);
+        var rows = Enumerable
+            .Range(1, 16)
+            .Select(x => new Row()
+            {
+                Id = x, email = "test@user.com", username = "test_user"
+            })
+            .ToArray();
+        foreach (var row in rows)
+        {
+            table.SerializeRow(row);
+        }
+
+        var rowList = new Row [] { 
+            new()
+            {
+                Id = 1, email = "test@user.com", username = "test_user"
+            }
+        };
+        var initialResult = string.Concat(JsonSerializer.Serialize(rowList));
+        Assert.Equal(initialResult, fakeDbWriter.RetrieveMessage()[0]);
+        var finalResult = string.Concat(
+            JsonSerializer.Serialize(rows[..14]));
+        Assert.Equal(finalResult, fakeDbWriter.RetrieveMessage()[16]);
+        var finalResultTwo = string.Concat(
+            JsonSerializer.Serialize(rows[14..16]));
+        Assert.Equal(finalResultTwo, fakeDbWriter.RetrieveMessage()[17]);
     }
 }
