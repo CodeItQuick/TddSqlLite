@@ -41,7 +41,7 @@ public class TableTests
             {
                 Id = 1, email = "test@user.com", username = "test_user"
             },
-            table.DeserializeRow(page, row));
+            table.DeserializeRow(page.PageNum, row.Id));
     }
     [Fact]
     public void CanInsertRowsIntoExistingPage()
@@ -64,13 +64,13 @@ public class TableTests
             {
                 Id = 1, email = "test@user.com", username = "test_user"
             },
-            table.DeserializeRow(page, row1));
+            table.DeserializeRow(page.PageNum, row1.Id));
         Assert.Equivalent(
             new Row()
             {
                 Id = 2, email = "test@user.com", username = "test_user"
             },
-            table.DeserializeRow(page, row2));
+            table.DeserializeRow(page.PageNum, row2.Id));
     }
     [Fact]
     public void CanInsertRowsIntoExistingPageAndRetrieveAllAvailable()
@@ -102,7 +102,7 @@ public class TableTests
                     Id = 2, email = "test@user.com", username = "test_user",
                 },
             },
-            table.DeserializePage(page));
+            table.DeserializePage(page.PageNum));
     }
     [Fact]
     public void AddsToNextPageWhenFull()
@@ -119,9 +119,11 @@ public class TableTests
         {
             table.SerializeRow(row);
         }
-        
-        Assert.Equal(14, table.DeserializePage(new Page() { PageNum = 0 }).Length);
-        Assert.Single(table.DeserializePage(new Page() { PageNum = 1 }));
+
+        Page page = new Page() { PageNum = 0 };
+        Assert.Equal(14, table.DeserializePage(page.PageNum).Length);
+        Page page1 = new Page() { PageNum = 1 };
+        Assert.Single(table.DeserializePage(page1.PageNum));
     }
     [Fact]
     public void CanFillTable()
@@ -138,8 +140,9 @@ public class TableTests
         {
             table.SerializeRow(row);
         }
-        
-        Assert.Equal(14, table.DeserializePage(new Page() { PageNum = 99 }).Length);
+
+        Page page = new Page() { PageNum = 99 };
+        Assert.Equal(14, table.DeserializePage(page.PageNum).Length);
     }
     [Fact]
     public void FullTableThrowsError()
@@ -177,9 +180,11 @@ public class TableTests
         {
             table.SerializeRow(row);
         }
-        
-        Assert.Equal(14, table.DeserializePage(new Page() { PageNum = 0 }).Length);
-        Assert.Equal(2, table.DeserializePage(new Page() { PageNum = 1 }).Length);
+
+        Page page = new Page() { PageNum = 0 };
+        Assert.Equal(14, table.DeserializePage(page.PageNum).Length);
+        Page page1 = new Page() { PageNum = 1 };
+        Assert.Equal(2, table.DeserializePage(page1.PageNum).Length);
     }
     [Fact]
     public void CanSavePageToFile()

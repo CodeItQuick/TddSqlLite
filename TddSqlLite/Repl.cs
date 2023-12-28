@@ -102,7 +102,8 @@ public class Repl
                 return EXECUTE.SUCCESS;
             case STATEMENTS.INSERT:
                 var commands = command.Split(" ");
-                var currentPageRows = _table.DeserializePage(new Page() { PageNum = 0 });
+                Page page = new Page() { PageNum = 0 };
+                var currentPageRows = _table.DeserializePage(page.PageNum);
                 _table.SerializeRow(
                     new Row()
                 {
@@ -114,7 +115,8 @@ public class Repl
             case STATEMENTS.SELECT:
                 
                 _writeLine.Print("Id\tusername\temail");
-                var rows = _table.DeserializePage(new Page() { PageNum = 0 });
+                Page page1 = new Page() { PageNum = 0 };
+                var rows = _table.DeserializePage(page1.PageNum);
                 foreach (var row in rows)
                 {
                     _writeLine.Print($"{row.Id}\t{row.username}\t{row.email}");

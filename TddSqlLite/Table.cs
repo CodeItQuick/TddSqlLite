@@ -68,20 +68,23 @@ public class Table
         _dbFileHandler.WriteToDb(contents);
     }
 
-    public Row DeserializeRow(Page page, Row row)
+    public Row DeserializeRow(int pageNum, int rowId)
     {
         string[] readFromDb = _dbFileHandler.ReadFromDb();
         var rows = readFromDb.ToList().Select(x => 
             JsonSerializer.Deserialize<Row[]>(x)).ToList();
-        var deserializeRow = rows.Skip(page.PageNum).FirstOrDefault()?.First(x => x.Id == row.Id);
+        var deserializeRow = rows
+            .Skip(pageNum)
+            .FirstOrDefault()
+            ?.First(x => x.Id == rowId);
         return deserializeRow ?? new Row();
     }
 
-    public Row[] DeserializePage(Page page)
+    public Row[] DeserializePage(int pagePageNum)
     {
         string[] readFromDb = _dbFileHandler.ReadFromDb();
         var rows = readFromDb.ToList().Select(x => 
             JsonSerializer.Deserialize<Row[]>(x)).ToList();
-        return rows.Skip(page.PageNum).First() ?? Array.Empty<Row>();
+        return rows.Skip(pagePageNum).First() ?? Array.Empty<Row>();
     }
 }
