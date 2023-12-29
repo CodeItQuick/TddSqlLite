@@ -69,7 +69,7 @@ public class Table
         {
             RowNum = 0, 
             Table = this, 
-            EndOfTable = _pager.CountRows()
+            EndOfTable = _pager.CountRows() - 1
         };
     }
 

@@ -31,8 +31,6 @@ public class CursorTests
     [Fact]
     public void CreateCursorAtEndOfTableWithDataInside()
     {
-        var cursor = new Cursor();
-
         var table = new Table(@"cursorAtEnd.txt");
         table.SerializeRow(new Row() { Id = 1, email = "test@user.com", username = "test-user"});
         table.SerializeRow(new Row() { Id = 2, email = "test@user.com", username = "test-user"});
