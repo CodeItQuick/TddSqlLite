@@ -8,7 +8,7 @@ public class TableTests
     [Fact]
     public void CannotInsertRowWithTooLongUsername()
     {
-        var table = new Table();
+        var table = new Table(@"database.txt");
         var row = new Row() { Id = 1, email = "test@user.com", username = string.Concat(Enumerable.Repeat("a", 256))};
         var page = new Page() { PageNum = 0, Rows = Array.Empty<Row>()};
         Assert.Throws<Exception>(() => table.SerializeRow(row));
@@ -16,7 +16,7 @@ public class TableTests
     [Fact]
     public void CannotInsertRowWithTooLongEmail()
     {
-        var table = new Table();
+        var table = new Table(@"database.txt");
         var row = new Row() { Id = 1, email = string.Concat(Enumerable.Repeat("a", 256)), username = "testuser"};
         var page = new Page() { PageNum = 0, Rows = Array.Empty<Row>()};
         Assert.Throws<Exception>(() => table.SerializeRow(row));
@@ -24,7 +24,7 @@ public class TableTests
     [Fact]
     public void CannotInsertRowWithNegativeId()
     {
-        var table = new Table();
+        var table = new Table(@"database.txt");
         var row = new Row() { Id = -1, email = "test@user.com", username = "testuser"};
         var page = new Page() { PageNum = 0, Rows = Array.Empty<Row>()};
         Assert.Throws<Exception>(() => table.SerializeRow(row));
@@ -46,7 +46,7 @@ public class TableTests
     [Fact]
     public void CanInsertRowsIntoExistingPage()
     {
-        var table = new Table();
+        var table = new Table(@"database.txt");
         var row1 = new Row()
         {
             Id = 1, email = "test@user.com", username = "test_user"
@@ -75,7 +75,7 @@ public class TableTests
     [Fact]
     public void CanInsertRowsIntoExistingPageAndRetrieveAllAvailable()
     {
-        var table = new Table();
+        var table = new Table(@"database.txt");
         var row1 = new Row()
         {
             Id = 1, email = "test@user.com", username = "test_user"
@@ -107,7 +107,7 @@ public class TableTests
     [Fact]
     public void AddsToNextPageWhenFull()
     {
-        var table = new Table();
+        var table = new Table(@"database.txt");
         var rows = Enumerable
             .Range(1, 15)
             .Select(x => new Row()
@@ -212,7 +212,7 @@ public class TableTests
     [Fact]
     public void InRealFileCanSavePageToFile()
     {
-        var table = new Table();
+        var table = new Table(@"database.txt");
         var rows = Enumerable
             .Range(1, 16)
             .Select(x => new Row()

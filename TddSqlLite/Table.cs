@@ -1,15 +1,18 @@
 using System.Text;
 using System.Text.Json;
+using Tests;
 
 namespace TddSqlLite;
 
 public class Table
 {
     private readonly Pager _pager = new();
-    private readonly IDbFileHandler _dbFileHandler = new DbFileHandler();
+    private readonly IDbFileHandler _dbFileHandler;
+    private Cursor _currentCursor;
 
-    public Table()
+    public Table(string databaseTableFilename)
     {
+        _dbFileHandler = new DbTableFileHandler(databaseTableFilename);
     }
 
     public Table(IDbFileHandler dbFileHandler)
@@ -58,5 +61,36 @@ public class Table
         var rows = readFromDb.ToList().Select(x => 
             JsonSerializer.Deserialize<Row[]>(x)).ToList();
         return rows.Skip(pagePageNum).First() ?? Array.Empty<Row>();
+    }
+
+    public void CreateCursorStart()
+    {
+        _currentCursor = new Cursor()
+        {
+            RowNum = 0, 
+            Table = this, 
+            EndOfTable = _pager.CountRows()
+        };
+    }
+
+    public void CreateCursorEnd()
+    {
+        var endOfTable = _pager.CountRows();
+        _currentCursor = new Cursor()
+        {
+            RowNum = endOfTable - 1, 
+            Table = this, 
+            EndOfTable = endOfTable - 1
+        };
+    }
+
+    public Row? SelectRow()
+    {
+        return _pager.SelectRow(_currentCursor);  
+    }
+
+    public void AdvanceCursor()
+    {
+        _currentCursor.RowNum++;
     }
 }

@@ -38,7 +38,7 @@ public class Repl
     {
         _writeLine = writeLine;
         _consoleInputWrapper = consoleInputWrapper;
-        _table = new Table();
+        _table = new Table(@"database.txt");
     }
 
     public void Start()

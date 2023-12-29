@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Tests;
 
 namespace TddSqlLite;
 
@@ -35,11 +36,23 @@ public class Pager
     }
 
     public List<string> RetrieveAllRows()
-    {
-        
+    {   
         return _pages.Select(
                 x =>
                     string.Concat(JsonSerializer.Serialize(x.Rows)))
             .ToList();
+    }
+
+    public int CountRows()
+    {
+        return _pages.Aggregate(0, (acc, curr) => acc + curr.Rows.Length);
+    }
+
+    public Row? SelectRow(Cursor cursorRow)
+    {
+        return _pages.FirstOrDefault(x => 
+                x.Rows.Any(y => y.Id == cursorRow.RowNum + 1))
+            ?.Rows
+            .FirstOrDefault(x => x.Id == cursorRow.RowNum + 1);
     }
 }

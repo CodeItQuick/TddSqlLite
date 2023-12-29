@@ -2,9 +2,15 @@ using System.Text;
 
 namespace TddSqlLite;
 
-public class DbFileHandler : IDbFileHandler
+public class DbTableFileHandler : IDbFileHandler
 {
-    private string _fullPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"database.txt");
+    private string _fullPath;
+
+    public DbTableFileHandler(string filename)
+    {
+        _fullPath = Path.Combine(Environment
+            .GetFolderPath(Environment.SpecialFolder.ApplicationData), filename);
+    }
 
     public void WriteToDb(IEnumerable<string> contents)
     {
