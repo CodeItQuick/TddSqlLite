@@ -165,9 +165,13 @@ public class TableTests
         }
 
         Page page = new Page() { PageNum = 0 };
-        Assert.Equal(14, table.DeserializePage(page.PageNum).Length);
+        Assert.Equal(4, table.DeserializePage(page.PageNum).Length);
         Page page1 = new Page() { PageNum = 1 };
-        Assert.Single(table.DeserializePage(page1.PageNum));
+        Assert.Equal(4, table.DeserializePage(page1.PageNum).Length);
+        Page page2 = new Page() { PageNum = 2 };
+        Assert.Equal(4, table.DeserializePage(page2.PageNum).Length);
+        Page page3 = new Page() { PageNum = 3 };
+        Assert.Equal(3, table.DeserializePage(page3.PageNum).Length);
     }
     [Fact]
     public void CanFillTable()
@@ -226,9 +230,13 @@ public class TableTests
         }
 
         Page page = new Page() { PageNum = 0 };
-        Assert.Equal(14, table.DeserializePage(page.PageNum).Length);
+        Assert.Equal(4, table.DeserializePage(page.PageNum).Length);
         Page page1 = new Page() { PageNum = 1 };
-        Assert.Equal(2, table.DeserializePage(page1.PageNum).Length);
+        Assert.Equal(4, table.DeserializePage(page1.PageNum).Length);
+        Page page2 = new Page() { PageNum = 2 };
+        Assert.Equal(4, table.DeserializePage(page2.PageNum).Length);
+        Page page3 = new Page() { PageNum = 3 };
+        Assert.Equal(4, table.DeserializePage(page3.PageNum).Length);
     }
     [Fact]
     public void CanSavePageToFile()
@@ -247,11 +255,17 @@ public class TableTests
             table.SerializeRow(row);
         }
 
-        var initialResult = string.Concat(JsonSerializer.Serialize(rows[..14]));
+        var initialResult = string.Concat(JsonSerializer.Serialize(rows[..4]));
         Assert.Equal(initialResult, fakeDbWriter.RetrieveMessage()[0]);
         var finalResult = string.Concat(
-            JsonSerializer.Serialize(rows[14..16]));
+            JsonSerializer.Serialize(rows[4..8]));
         Assert.Equal(finalResult, fakeDbWriter.RetrieveMessage()[1]);
+        var finalResult1 = string.Concat(
+            JsonSerializer.Serialize(rows[8..12]));
+        Assert.Equal(finalResult1, fakeDbWriter.RetrieveMessage()[2]);
+        var finalResult2 = string.Concat(
+            JsonSerializer.Serialize(rows[12..16]));
+        Assert.Equal(finalResult2, fakeDbWriter.RetrieveMessage()[3]);
     }
     [Fact]
     public void InRealFileCanSavePageToFile()
@@ -272,9 +286,13 @@ public class TableTests
         string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         string fullPath = Path.Combine(path, @"database.txt");
         var readAllLines = File.ReadAllLines(fullPath);
-        Assert.Equal("[{\"Id\":1,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":2,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":3,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":4,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":5,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":6,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":7,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":8,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":9,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":10,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":11,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":12,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":13,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":14,\"username\":\"test_user\",\"email\":\"test@user.com\"}]", 
+        Assert.Equal("[{\"Id\":1,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":2,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":3,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":4,\"username\":\"test_user\",\"email\":\"test@user.com\"}]", 
             readAllLines.First());
-        Assert.Equal("[{\"Id\":15,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":16,\"username\":\"test_user\",\"email\":\"test@user.com\"}]", 
+        Assert.Equal("[{\"Id\":5,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":6,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":7,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":8,\"username\":\"test_user\",\"email\":\"test@user.com\"}]", 
             readAllLines.Skip(1).First());
+        Assert.Equal("[{\"Id\":9,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":10,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":11,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":12,\"username\":\"test_user\",\"email\":\"test@user.com\"}]", 
+            readAllLines.Skip(2).First());
+        Assert.Equal("[{\"Id\":13,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":14,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":15,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":16,\"username\":\"test_user\",\"email\":\"test@user.com\"}]", 
+            readAllLines.Skip(3).First());
     }
 }

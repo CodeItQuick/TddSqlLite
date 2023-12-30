@@ -30,10 +30,9 @@ public class BTree
     public void RepopulateNodes(SortedList<int, Row> sortedNodes)
     {
         _internalNodes = new SortedList<int, Dictionary<int, Row>>();
-        // 1, 2, 3, 4, 5, 6, 7 # nodes
-        // 1, 1, 2, 2, 3, 3, 3, 3, # internal leaf nodes
-        // 1, 1, 2, 3, 3, 3, 3, 3, # internal leaf nodes
-        var stepSize = 2;
+        // 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 # total nodes
+        // 1, 1, 2, 2, 3, 3, 3, 3, 3, 4  # internal leaf nodes
+        var stepSize = sortedNodes.Count < 4 ? 2 : int.Parse("" + Math.Ceiling(Math.Sqrt(sortedNodes.Count)));
         for (var i = 0; i < sortedNodes.Count; i += stepSize)
         {
             var dictionary = new Dictionary<int, Row>();
