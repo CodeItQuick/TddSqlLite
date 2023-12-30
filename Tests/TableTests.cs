@@ -151,7 +151,7 @@ public class TableTests
     [Fact]
     public void AddsToNextPageWhenFull()
     {
-        var table = new Table(@"database.txt");
+        var table = new Table(new FakeDbFileHandler());
         var rows = Enumerable
             .Range(1, 15)
             .Select(x => new Row()

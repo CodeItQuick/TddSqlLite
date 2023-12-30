@@ -20,11 +20,10 @@ public class DbTableFileHandler : IDbFileHandler
             "",
             Encoding.UTF8).GetAwaiter().GetResult();
         // print new page
-        contents.ToList().ForEach(content => 
         File.AppendAllLines(
             _fullPath,
-            new List<string>() { content },
-            Encoding.UTF8));
+            contents,
+            Encoding.UTF8);
     }
 
     public string[] ReadFromDb()

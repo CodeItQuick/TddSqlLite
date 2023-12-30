@@ -1,4 +1,3 @@
-using System.Text;
 using System.Text.Json;
 using Tests;
 
@@ -67,9 +66,7 @@ public class Table
     {
         _currentCursor = new Cursor()
         {
-            RowNum = 0, 
-            Table = this, 
-            EndOfTable = _pager.CountRows() - 1
+            RowNum = 0
         };
         return _pager.CountRows();
     }
@@ -79,9 +76,7 @@ public class Table
         var endOfTable = _pager.CountRows();
         _currentCursor = new Cursor()
         {
-            RowNum = endOfTable - 1, 
-            Table = this, 
-            EndOfTable = endOfTable - 1
+            RowNum = endOfTable - 1,
         };
     }
 

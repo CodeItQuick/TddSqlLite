@@ -40,6 +40,12 @@ public class Repl
         _consoleInputWrapper = consoleInputWrapper;
         _table = new Table(@"database.txt");
     }
+    public Repl(IConsoleWriteLineWrapper writeLine, IConsoleInputWrapper consoleInputWrapper, Table table)
+    {
+        _writeLine = writeLine;
+        _consoleInputWrapper = consoleInputWrapper;
+        _table = table;
+    }
 
     public void Start()
     {

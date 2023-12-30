@@ -128,14 +128,14 @@ public class ReplTests
         var writeLineWrapper = new FakeConsoleWriteLineWrapper();
         var commands = new Stack<string>();
         commands.Push(".exit"); // exit
-        commands.Push("SELECT * FROM cstack");
         commands.Push("INSERT 1 cstack foo@bar.com");
-        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands));
+        var table = new Table(@"database.txt");
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), table);
         var writeLineWrapperRetrieval = new FakeConsoleWriteLineWrapper();
         var commandsRetrieval = new Stack<string>();
         commandsRetrieval.Push(".exit"); // exit
         commandsRetrieval.Push("SELECT * FROM cstack");
-        var replRetrieve = new Repl(writeLineWrapperRetrieval, new FakeConsoleInputWrapper(commandsRetrieval));
+        var replRetrieve = new Repl(writeLineWrapperRetrieval, new FakeConsoleInputWrapper(commandsRetrieval), table);
         repl.Start();
 
         replRetrieve.Start();
