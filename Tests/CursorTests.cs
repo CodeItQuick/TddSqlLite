@@ -17,9 +17,9 @@ public class CursorTests
     {
         var table = new Table(@"databaseAtStart.txt");
         table.SerializeRow(new Row() { Id = 1, email = "test@user.com", username = "test-user"});
-        
-        table.CreateCursorStart();
-        
+
+        var numRows = table.CreateCursorStart();
+
         Assert.Equivalent(
             new Row()
             {
@@ -27,6 +27,7 @@ public class CursorTests
                 username = "test-user", 
                 email = "test@user.com"
             }, table.SelectRow());
+        Assert.Equal(1, numRows);
     }
     [Fact]
     public void CreateCursorAtEndOfTableWithDataInside()

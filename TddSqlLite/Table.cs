@@ -63,7 +63,7 @@ public class Table
         return rows.Skip(pagePageNum).First() ?? Array.Empty<Row>();
     }
 
-    public void CreateCursorStart()
+    public int CreateCursorStart()
     {
         _currentCursor = new Cursor()
         {
@@ -71,6 +71,7 @@ public class Table
             Table = this, 
             EndOfTable = _pager.CountRows() - 1
         };
+        return _pager.CountRows();
     }
 
     public void CreateCursorEnd()

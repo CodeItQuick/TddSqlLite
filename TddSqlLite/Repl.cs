@@ -102,24 +102,23 @@ public class Repl
                 return EXECUTE.SUCCESS;
             case STATEMENTS.INSERT:
                 var commands = command.Split(" ");
-                Page page = new Page() { PageNum = 0 };
-                var currentPageRows = _table.DeserializePage(page.PageNum);
-                _table.SerializeRow(
-                    new Row()
+                var insertRow = new Row()
                 {
                     Id = Int32.Parse(commands.Skip(1).First()),
                     username = commands.Skip(2).First(),
                     email = commands.Skip(3).First(),
-                } );
+                };
+                _table.SerializeRow(insertRow);
                 return EXECUTE.SUCCESS;
             case STATEMENTS.SELECT:
                 
                 _writeLine.Print("Id\tusername\temail");
-                Page page1 = new Page() { PageNum = 0 };
-                var rows = _table.DeserializePage(page1.PageNum);
-                foreach (var row in rows)
+                var numRows = _table.CreateCursorStart();
+                for (var rowIdx = 0; rowIdx < numRows; rowIdx++)
                 {
+                    var row = _table.SelectRow();
                     _writeLine.Print($"{row.Id}\t{row.username}\t{row.email}");
+                    _table.AdvanceCursor();
                 }
                 return EXECUTE.SUCCESS;
             default:

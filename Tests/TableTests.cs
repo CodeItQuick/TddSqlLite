@@ -189,8 +189,8 @@ public class TableTests
             table.SerializeRow(row);
         }
 
-        Page page = new Page() { PageNum = 99 };
-        Assert.Equal(14, table.DeserializePage(page.PageNum).Length);
+        var numRows = table.CreateCursorStart();
+        Assert.Equal(1400, numRows);
     }
     [Fact]
     public void FullTableThrowsError()
