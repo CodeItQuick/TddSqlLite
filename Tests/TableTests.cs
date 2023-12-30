@@ -104,6 +104,50 @@ public class TableTests
             },
             table.DeserializePage(page.PageNum));
     }
+
+    [Fact]
+    public void AddSortedNodesToBeTree()
+    {
+        var sortedList = new SortedList<int, Row>()
+        {
+            [1] = new() { Id = 1, email = "test@user.com", username = "test-user" },
+            [2] = new() { Id = 2, email = "test@user.com", username = "test-user" },
+            [3] = new() { Id = 3, email = "test@user.com", username = "test-user" },
+            [4] = new() { Id = 4, email = "test@user.com", username = "test-user" },
+            [5] = new() { Id = 5, email = "test@user.com", username = "test-user" },
+            [6] = new() { Id = 6, email = "test@user.com", username = "test-user" },
+            [7] = new() { Id = 7, email = "test@user.com", username = "test-user" },
+            [8] = new() { Id = 8, email = "test@user.com", username = "test-user" },
+            [9] = new() { Id = 9, email = "test@user.com", username = "test-user" },
+            [10] = new() { Id = 10, email = "test@user.com", username = "test-user" },
+            [11] = new() { Id = 11, email = "test@user.com", username = "test-user" },
+            [12] = new() { Id = 12, email = "test@user.com", username = "test-user" },
+            [13] = new() { Id = 13, email = "test@user.com", username = "test-user" },
+            [14] = new() { Id = 14, email = "test@user.com", username = "test-user" },
+            [15] = new() { Id = 15, email = "test@user.com", username = "test-user" },
+            [18] = new() { Id = 18, email = "test@user.com", username = "test-user" },
+        };
+        var bTree = new BTree();
+        
+        bTree.RepopulateNodes(sortedList);
+
+        Assert.Equal(1, bTree.GetNode(1).Id);
+        Assert.Equal(2, bTree.GetNode(2).Id);
+        Assert.Equal(3, bTree.GetNode(3).Id);
+        Assert.Equal(4, bTree.GetNode(4).Id);
+        Assert.Equal(5, bTree.GetNode(5).Id);
+        Assert.Equal(6, bTree.GetNode(6).Id);
+        Assert.Equal(7, bTree.GetNode(7).Id);
+        Assert.Equal(8, bTree.GetNode(8).Id);
+        Assert.Equal(9, bTree.GetNode(9).Id);
+        Assert.Equal(10, bTree.GetNode(10).Id);
+        Assert.Equal(11, bTree.GetNode(11).Id);
+        Assert.Equal(12, bTree.GetNode(12).Id);
+        Assert.Equal(13, bTree.GetNode(13).Id);
+        Assert.Equal(14, bTree.GetNode(14).Id);
+        Assert.Equal(15, bTree.GetNode(15).Id);
+        Assert.Equal(18, bTree.GetNode(18).Id);
+    }
     [Fact]
     public void AddsToNextPageWhenFull()
     {

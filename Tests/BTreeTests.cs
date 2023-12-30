@@ -34,8 +34,8 @@ public class BTreeTests
         bTree.AddNode(new Row() { Id = 1, email = "test@user.com", username = "test-user" });
         
         Assert.Equal(5, bTree.GetNode(5).Id);
-        Assert.Equal(1, bTree.GetNode(1).Id);
         Assert.Equal(12, bTree.GetNode(12).Id);
+        Assert.Equal(1, bTree.GetNode(1).Id);
     }
     [Fact]
     public void CanInsertThreeDifferentNodes()

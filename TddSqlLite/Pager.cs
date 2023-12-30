@@ -15,9 +15,11 @@ public class Pager
     };
     private const int MAX_ROWS_PER_PAGE = 14;
     private const int MAX_PAGES = 100;
+    private BTree _bTree = new();
 
     public void AppendPage(Row row)
     {
+        _bTree.AddNode(row);
         if (_pages.Length == MAX_PAGES &&
             _pages[^1].Rows.Length == MAX_ROWS_PER_PAGE)
         {
@@ -36,23 +38,22 @@ public class Pager
     }
 
     public List<string> RetrieveAllRows()
-    {   
-        return _pages.Select(
+    {
+        var allNodes = _bTree.GetNodes();
+        // return allNodes.Select(x => JsonSerializer.Serialize(x)).ToList();
+        return allNodes.Values.Select(
                 x =>
-                    string.Concat(JsonSerializer.Serialize(x.Rows)))
+                    string.Concat(JsonSerializer.Serialize(x.Values)))
             .ToList();
     }
 
     public int CountRows()
     {
-        return _pages.Aggregate(0, (acc, curr) => acc + curr.Rows.Length);
+        return _bTree.GetAllNodes().Count;
     }
 
     public Row? SelectRow(Cursor cursorRow)
     {
-        return _pages.FirstOrDefault(x => 
-                x.Rows.Any(y => y.Id == cursorRow.RowNum + 1))
-            ?.Rows
-            .FirstOrDefault(x => x.Id == cursorRow.RowNum + 1);
+        return _bTree.GetNode(cursorRow.RowNum + 1);
     }
 }

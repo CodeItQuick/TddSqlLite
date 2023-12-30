@@ -13,37 +13,66 @@ public class BTree
         {
             [row.Id] = row
         };
-        var internalNodeList = _internalNodes.Count == 0 ? new Dictionary<int, Row>() : _internalNodes.FirstOrDefault().Value;
-        foreach (var node in internalNodeList)
+        if (_internalNodes.Any())
         {
-            sortedNodes.Add(node.Key, node.Value);
-        }
-        if (internalNodeList.Count > 0)
-        {
-            _internalNodes.Remove(_internalNodes.First().Key);
-        }
-        for (var i = 0; i < sortedNodes.Count; i += 2)
-        {
-            _internalNodes.Add(sortedNodes.Keys[i], new Dictionary<int, Row>()
+            foreach (var rowNode in _internalNodes.ToList())
             {
-                [sortedNodes[sortedNodes.Keys[i]].Id] = sortedNodes[sortedNodes.Keys[i]], 
-            });
-            if (i + 1 < sortedNodes.Count)
-            {
-                _internalNodes.Remove(sortedNodes.Keys[i]);
-                _internalNodes.Add(sortedNodes.Keys[i + 1], new Dictionary<int, Row>
+                foreach (var rowed in rowNode.Value)
                 {
-                    [sortedNodes[sortedNodes.Keys[i]].Id] = sortedNodes[sortedNodes.Keys[i]], 
-                    [sortedNodes[sortedNodes.Keys[i + 1]].Id] = sortedNodes[sortedNodes.Keys[i + 1]], 
-                });
+                    sortedNodes.Add(rowed.Key, rowed.Value);
+                }
+                
             }
+        }
+
+        RepopulateNodes(sortedNodes);
+    }
+
+    public void RepopulateNodes(SortedList<int, Row> sortedNodes)
+    {
+        _internalNodes = new SortedList<int, Dictionary<int, Row>>();
+        for (var i = 0; i < sortedNodes.Count; i += 14)
+        {
+            var dictionary = new Dictionary<int, Row>();
+            var lastIndex = sortedNodes
+                .Where((x, idx) => idx < i + 14)
+                .Select((x, idx) => x)
+                .Count();
+            var range = Enumerable.Range(i, lastIndex - i).ToList();
+            range.ForEach(
+                (curr) =>
+                {
+                    var index = curr;
+                    var sortedNodesKey = sortedNodes.Keys[index];
+                    var node = sortedNodes[sortedNodesKey];
+                    var nodeId = node.Id;
+                    dictionary.Add(nodeId, node);
+                });
+            _internalNodes.Add(dictionary.Keys.Last(), dictionary);
         }
     }
 
-    public Row GetNode(int nodeId)
+    public Row? GetNode(int nodeId)
     {
-        var correctNode = _internalNodes
-            .First(x => x.Key >= nodeId);
-        return correctNode.Value[nodeId];
+        if (_internalNodes.Count == 0)
+        {
+            return null;
+        }
+
+        Dictionary<int, Row>? correctNode = _internalNodes
+            .FirstOrDefault(x => x.Key >= nodeId)
+            .Value;
+        return correctNode.FirstOrDefault(x => x.Key == nodeId).Value;
+    }
+
+    public List<Row> GetAllNodes()
+    {
+        return _internalNodes
+            .SelectMany(x => x.Value.Values)
+            .ToList();
+    }
+    public SortedList<int, Dictionary<int, Row>> GetNodes()
+    {
+        return _internalNodes;
     }
 }
