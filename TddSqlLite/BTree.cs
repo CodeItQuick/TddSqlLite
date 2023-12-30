@@ -21,7 +21,6 @@ public class BTree
                 {
                     sortedNodes.Add(rowed.Key, rowed.Value);
                 }
-                
             }
         }
 
@@ -31,11 +30,16 @@ public class BTree
     public void RepopulateNodes(SortedList<int, Row> sortedNodes)
     {
         _internalNodes = new SortedList<int, Dictionary<int, Row>>();
-        for (var i = 0; i < sortedNodes.Count; i += 14)
+        // 1, 2, 3, 4, 5, 6, 7 # nodes
+        // 1, 1, 2, 2, 3, 3, 3, 3, # internal leaf nodes
+        // 1, 1, 2, 3, 3, 3, 3, 3, # internal leaf nodes
+        var stepSize = 2;
+        for (var i = 0; i < sortedNodes.Count; i += stepSize)
         {
             var dictionary = new Dictionary<int, Row>();
+            var maxNodeSize = 2;
             var lastIndex = sortedNodes
-                .Where((x, idx) => idx < i + 14)
+                .Where((x, idx) => idx < i + stepSize)
                 .Select((x, idx) => x)
                 .Count();
             var range = Enumerable.Range(i, lastIndex - i).ToList();
@@ -50,6 +54,7 @@ public class BTree
                 });
             _internalNodes.Add(dictionary.Keys.Last(), dictionary);
         }
+        
     }
 
     public Row? GetNode(int nodeId)
@@ -74,5 +79,20 @@ public class BTree
     public SortedList<int, Dictionary<int, Row>> GetNodes()
     {
         return _internalNodes;
+    }
+
+    public List<string> PrintBTree()
+    {
+        var printBTree = new List<string> { "db > Tree:" };
+        printBTree.Add($"- internal (size {_internalNodes.Values.Count})");
+        foreach (var leafNodes in _internalNodes.Values)
+        {
+            printBTree.Add($"\t- leaf (size {leafNodes.Values.Count})");
+            foreach (var leafNodesValue in leafNodes.Values)
+            {
+                printBTree.Add($"\t\t- {leafNodesValue.Id}");
+            }
+        }
+        return printBTree;
     }
 }
