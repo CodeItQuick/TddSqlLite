@@ -15,7 +15,11 @@ public class BTree
             {
                 foreach (var rowed in rowNode.Value)
                 {
-                    sortedNodes.Add(rowed.Key, rowed.Value);
+                    var success = sortedNodes.TryAdd(rowed.Key, rowed.Value);
+                    if (!success)
+                    {
+                        throw new Exception("Row already exists in table");
+                    }
                 }
             }
         }

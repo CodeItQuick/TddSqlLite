@@ -24,7 +24,8 @@ public class Repl
     private enum EXECUTE
     {
         SUCCESS,
-        TABLE_FULL
+        TABLE_FULL,
+        INSERT_ROW_FAIL
     }
     private enum STATEMENTS
     {
@@ -95,6 +96,12 @@ public class Repl
                 case EXECUTE.SUCCESS:
                     _writeLine.Print("Executed.");
                     break;
+                case EXECUTE.INSERT_ROW_FAIL:
+                    _writeLine.Print("Failed to Insert Row. Already Exists.");
+                    break;
+                case EXECUTE.TABLE_FULL:
+                    _writeLine.Print("Table is Full.");
+                    break;
             }
 
         } while (_commands.Count > 0);
@@ -114,7 +121,14 @@ public class Repl
                     username = commands.Skip(2).First(),
                     email = commands.Skip(3).First(),
                 };
-                _table.SerializeRow(insertRow);
+                try
+                {
+                    _table.SerializeRow(insertRow);
+                }
+                catch
+                {
+                    return EXECUTE.INSERT_ROW_FAIL;
+                }
                 return EXECUTE.SUCCESS;
             case STATEMENTS.SELECT:
                 

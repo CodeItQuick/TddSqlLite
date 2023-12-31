@@ -124,6 +124,30 @@ public class ReplTests
         Assert.Equal(8, retrieveMessage.Count);
     }
     [Fact]
+    public void InsertingTheTwoSameRecordsTwiceDoesNotCrashProgram()
+    {
+        var writeLineWrapper = new FakeConsoleWriteLineWrapper();
+        var commands = new Stack<string>();
+        commands.Push(".exit"); // exit
+        commands.Push("INSERT 1 error causes@error.com");
+        commands.Push("INSERT 1 cstack foo@bar.com");
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler()));
+
+        repl.Start();
+
+        var retrieveMessage = writeLineWrapper.RetrieveMessage();
+        Assert.Contains(IntroText, retrieveMessage);
+        Assert.Equivalent(new List<string>()
+        {
+            "sqlite> ", // enter .exit
+            "Failed to Insert Row. Already Exists.",
+            "sqlite> ", // enter failed insert statement
+            "Executed.",
+            "sqlite> ", // enter insert statement
+            IntroText // intro text
+        }, retrieveMessage.ToList(), true);
+    }
+    [Fact]
     public void CanRetrieveInsertedRowAfterClosingRepl()
     {
         var databaseTableFilename = @"databaseCanRetrieveAfterClosed.txt";
