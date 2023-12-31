@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text;
 using TddSqlLite;
 
 namespace Tests;
@@ -125,6 +126,11 @@ public class ReplTests
     [Fact]
     public void CanRetrieveInsertedRowAfterClosingRepl()
     {
+        var databaseTableFilename = @"databaseCanRetrieveAfterClosed.txt";
+        string fullPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), 
+            databaseTableFilename);
+        File.WriteAllText(fullPath, "", Encoding.UTF8);
         var writeLineWrapper = new FakeConsoleWriteLineWrapper();
         var commands = new Stack<string>();
         commands.Push(".exit"); // exit

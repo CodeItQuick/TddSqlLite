@@ -16,10 +16,10 @@ public class Table
         var rows = existingData.Select(x =>  
             JsonSerializer.Deserialize<Row[]>(x))
             .ToList();
-        if (rows.Count == 1 && rows.First().Length == 2)
+        if (rows.Count > 0)
         {
-            SerializeRow(rows.SelectMany(x => x.ToList()).FirstOrDefault());
-            SerializeRow(rows.SelectMany(x => x.ToList()).Skip(1).FirstOrDefault());
+            var insertRows = rows.SelectMany(x => x.ToList()).ToList();
+            insertRows.ForEach(SerializeRow);
         }
     }
 
