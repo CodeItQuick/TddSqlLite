@@ -18,7 +18,7 @@ public class ReplTests
         var commands = new Stack<string>();
         commands.Push(".exit");
         var fakeConsoleInputWrapper = new FakeConsoleInputWrapper(commands);
-        var repl = new Repl(writeLineWrapper, fakeConsoleInputWrapper, new Table(new FakeDbFileHandler()));
+        var repl = new Repl(writeLineWrapper, fakeConsoleInputWrapper, new Table(new FakeDbFileHandler(), "database"));
 
         repl.Start();
 
@@ -35,7 +35,7 @@ public class ReplTests
         var commands = new Stack<string>();
         commands.Push(".exit"); // exit
         commands.Push("CREATE table users (id int, username varchar(255), email varchar(255));");
-        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler()));
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"));
 
         repl.Start();
 
@@ -58,7 +58,7 @@ public class ReplTests
         var commands = new Stack<string>();
         commands.Push(".exit"); // exit
         commands.Push("INSERT 1");
-        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler()));
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"));
 
         repl.Start();
 
@@ -81,7 +81,7 @@ public class ReplTests
         var commands = new Stack<string>();
         commands.Push(".exit"); // exit
         commands.Push("INSERT 1 cstack foo@bar.com");
-        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler()));
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"));
 
         repl.Start();
 
@@ -104,7 +104,7 @@ public class ReplTests
         commands.Push(".exit"); // exit
         commands.Push("SELECT * FROM cstack");
         commands.Push("INSERT 1 cstack foo@bar.com");
-        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler()));
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"));
 
         repl.Start();
 
@@ -131,7 +131,7 @@ public class ReplTests
         commands.Push(".exit"); // exit
         commands.Push("INSERT 1 error causes@error.com");
         commands.Push("INSERT 1 cstack foo@bar.com");
-        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler()));
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"));
 
         repl.Start();
 
@@ -153,8 +153,8 @@ public class ReplTests
         var writeLineWrapper = new FakeConsoleWriteLineWrapper();
         var commands = new Stack<string>();
         commands.Push(".exit"); // exit
-        commands.Push("INSERT INTO database VALUES (1, error, causes@error.com)");
-        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler()));
+        commands.Push("INSERT INTO database VALUES (1, user, user@test.com)");
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"));
     
         repl.Start();
     
@@ -180,7 +180,7 @@ public class ReplTests
                           "username VARCHAR," +
                           "email VARCHAR" +
                           ")");
-        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler()));
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"));
     
         repl.Start();
     
@@ -208,7 +208,7 @@ public class ReplTests
         var commands = new Stack<string>();
         commands.Push(".exit"); // exit
         commands.Push("INSERT 1 cstack foo@bar.com");
-        var table = new Table(@"databaseCanRetrieveAfterClosed.txt");
+        var table = new Table(databaseTableFilename);
         var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), table);
         var writeLineWrapperRetrieval = new FakeConsoleWriteLineWrapper();
         var commandsRetrieval = new Stack<string>();
@@ -243,7 +243,7 @@ public class ReplTests
         commands.Push("INSERT 3 dstack foo3@bar.com");
         commands.Push("INSERT 2 astack foo2@bar.com");
         commands.Push("INSERT 1 cstack foo1@bar.com");
-        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler()));
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"));
 
         repl.Start();
 
@@ -270,7 +270,7 @@ public class ReplTests
         var commands = new Stack<string>();
         commands.Push(".exit"); // exit
         commands.Push("invalid command");
-        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler()));
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"));
 
         repl.Start();
 
@@ -291,7 +291,7 @@ public class ReplTests
         var commands = new Stack<string>();
         commands.Push(".exit"); // exit
         commands.Push(".invalidcommand");
-        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler()));
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"));
 
         repl.Start();
 
@@ -312,7 +312,7 @@ public class ReplTests
         var commands = new Stack<string>();
         commands.Push(".exit"); // exit
         commands.Push("invalid command");
-        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler()));
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"));
 
         repl.Start();
 
@@ -335,7 +335,7 @@ public class ReplTests
         commands.Push("SELECT * FROM USERS;");
         commands.Push("INSERT 3 dstack foo3@bar.com");
         commands.Push("INSERT 1 cstack foo1@bar.com");
-        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler()));
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"));
 
         repl.Start();
 

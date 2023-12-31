@@ -8,10 +8,12 @@ public class Table
     private readonly Pager _pager = new();
     private readonly IDbFileHandler _dbFileHandler;
     private Cursor _currentCursor;
+    private readonly string _tableName;
 
-    public Table(string databaseTableFilename)
+    public Table(string tableName)
     {
-        _dbFileHandler = new DbTableFileHandler(databaseTableFilename);
+        _tableName = tableName;
+        _dbFileHandler = new DbTableFileHandler(tableName + ".txt");
         var existingData = _dbFileHandler.ReadFromDb();
         var rows = existingData.Select(x =>  
             JsonSerializer.Deserialize<Row[]>(x))
@@ -23,8 +25,9 @@ public class Table
         }
     }
 
-    public Table(IDbFileHandler dbFileHandler)
+    public Table(IDbFileHandler dbFileHandler, string tableName)
     {
+        _tableName = tableName;
         _dbFileHandler = dbFileHandler;
     }
 
@@ -97,5 +100,10 @@ public class Table
     public void AdvanceCursor()
     {
         _currentCursor.RowNum++;
+    }
+
+    public bool IsTableName(string requestingTableName)
+    {
+        return _tableName == requestingTableName;
     }
 }

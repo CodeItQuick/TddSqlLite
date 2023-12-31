@@ -42,13 +42,15 @@ public class Repl
     {
         _writeLine = writeLine;
         _consoleInputWrapper = consoleInputWrapper;
-        _table = new Table(databaseFileName);
+        _table = new Table("database");
+        _tables = new[] { _table };
     }
     public Repl(IConsoleWriteLineWrapper writeLine, IConsoleInputWrapper consoleInputWrapper, Table table)
     {
         _writeLine = writeLine;
         _consoleInputWrapper = consoleInputWrapper;
         _table = table;
+        _tables = new[] { _table };
     }
 
     public void Start()
@@ -118,6 +120,7 @@ public class Repl
                 return EXECUTE.SUCCESS;
             case STATEMENTS.INSERT_INTO or STATEMENTS.INSERT:
                 string[] commands;
+                var insertIntoTable = _table;
                 if (statement == STATEMENTS.INSERT_INTO)
                 {
                     var startBracket = command.IndexOf("(", StringComparison.Ordinal) + 1;
@@ -125,6 +128,13 @@ public class Repl
                     var valuesInsertLength = endBracket - startBracket;
                     var inBrackets = command.Substring(startBracket, valuesInsertLength);
                     commands = inBrackets.Split(",");
+                    // finding Table Name                    
+                    var startTableName = command.IndexOf("INTO", StringComparison.Ordinal) + 4;
+                    var endTableName = command.IndexOf("VALUES", StringComparison.Ordinal);
+                    var tableStringLength = endTableName - startTableName;
+                    var tableName = command.Substring(startTableName, tableStringLength)
+                                                .Trim();
+                    insertIntoTable = _tables.First(table => table.IsTableName(tableName));
                 }
                 else
                 {

@@ -10,7 +10,7 @@ public class TableTests
     [Fact]
     public void CannotInsertRowWithTooLongUsername()
     {
-        var table = new Table(new FakeDbFileHandler());
+        var table = new Table(new FakeDbFileHandler(), "database");
         var row = new Row() { Id = 1, email = "test@user.com", username = string.Concat(Enumerable.Repeat("a", 256))};
         var page = new Page() { PageNum = 0, Rows = Array.Empty<Row>()};
         Assert.Throws<Exception>(() => table.SerializeRow(row));
@@ -18,7 +18,7 @@ public class TableTests
     [Fact]
     public void CannotInsertRowWithTooLongEmail()
     {
-        var table = new Table(new FakeDbFileHandler());
+        var table = new Table(new FakeDbFileHandler(), "database");
         var row = new Row() { Id = 1, email = string.Concat(Enumerable.Repeat("a", 256)), username = "testuser"};
         var page = new Page() { PageNum = 0, Rows = Array.Empty<Row>()};
         Assert.Throws<Exception>(() => table.SerializeRow(row));
@@ -26,7 +26,7 @@ public class TableTests
     [Fact]
     public void CannotInsertRowWithNegativeId()
     {
-        var table = new Table(new FakeDbFileHandler());
+        var table = new Table(new FakeDbFileHandler(), "database");
         var row = new Row() { Id = -1, email = "test@user.com", username = "testuser"};
         var page = new Page() { PageNum = 0, Rows = Array.Empty<Row>()};
         Assert.Throws<Exception>(() => table.SerializeRow(row));
@@ -34,7 +34,7 @@ public class TableTests
     [Fact]
     public void CanInsertRowsIntoTable()
     {
-        var table = new Table(new FakeDbFileHandler());
+        var table = new Table(new FakeDbFileHandler(), "database");
         var row = new Row() { Id = 1, email = "test@user.com", username = "test_user" };
         var page = new Page() { PageNum = 0, Rows = Array.Empty<Row>()};
         table.SerializeRow(row);
@@ -48,7 +48,7 @@ public class TableTests
     [Fact]
     public void CanInsertRowsIntoExistingPage()
     {
-        var table = new Table(new FakeDbFileHandler());
+        var table = new Table(new FakeDbFileHandler(), "database");
         var row1 = new Row()
         {
             Id = 1, email = "test@user.com", username = "test_user"
@@ -77,7 +77,7 @@ public class TableTests
     [Fact]
     public void CanInsertRowsIntoExistingPageAndRetrieveAllAvailable()
     {
-        var table = new Table(new FakeDbFileHandler());
+        var table = new Table(new FakeDbFileHandler(), "database");
         var row1 = new Row()
         {
             Id = 1, email = "test@user.com", username = "test_user"
@@ -153,7 +153,7 @@ public class TableTests
     [Fact]
     public void AddsToNextPageWhenFull()
     {
-        var table = new Table(new FakeDbFileHandler());
+        var table = new Table(new FakeDbFileHandler(), "database");
         var rows = Enumerable
             .Range(1, 15)
             .Select(x => new Row()
@@ -178,7 +178,7 @@ public class TableTests
     [Fact]
     public void CanFillTable()
     {
-        var table = new Table(new FakeDbFileHandler());
+        var table = new Table(new FakeDbFileHandler(), "database");
         var rows = Enumerable
             .Range(1, 1400)
             .Select(x => new Row()
@@ -197,7 +197,7 @@ public class TableTests
     [Fact]
     public void FullTableThrowsError()
     {
-        var table = new Table(new FakeDbFileHandler());
+        var table = new Table(new FakeDbFileHandler(), "database");
         var rows = Enumerable
             .Range(1, 1400)
             .Select(x => new Row()
@@ -218,7 +218,7 @@ public class TableTests
     [Fact]
     public void AddsToNextPageTwiceWhenFull()
     {
-        var table = new Table(new FakeDbFileHandler());
+        var table = new Table(new FakeDbFileHandler(), "database");
         var rows = Enumerable
             .Range(1, 16)
             .Select(x => new Row()
@@ -244,7 +244,7 @@ public class TableTests
     public void CanSavePageToFile()
     {
         var fakeDbWriter = new FakeDbFileHandler();
-        var table = new Table(fakeDbWriter);
+        var table = new Table(fakeDbWriter, "database");
         var rows = Enumerable
             .Range(1, 16)
             .Select(x => new Row()
@@ -272,10 +272,10 @@ public class TableTests
     [Fact]
     public void CanRetrieveAlreadySavedFile()
     {
-        var databaseTableFilename = @"canRetrieveSaveFile.txt";
+        var databaseTableFilename = @"canRetrieveSaveFile";
         string fullPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), 
-                databaseTableFilename);
+                databaseTableFilename + ".txt");
         var contents = 
             "[{\"Id\":1,\"username\":\"test_user\",\"email\":\"test@user.com\"}," +
             "{\"Id\":2,\"username\":\"test_user\",\"email\":\"test@user.com\"}]";
@@ -306,10 +306,10 @@ public class TableTests
     [Fact]
     public void CanRetrieveAlreadySavedFileWithOneRecord()
     {
-        var databaseTableFilename = @"canRetrieveSaveFile.txt";
+        var databaseTableFilename = @"canRetrieveSaveFile";
         string fullPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), 
-                databaseTableFilename);
+                databaseTableFilename + ".txt");
         var contents = 
             "[{\"Id\":1,\"username\":\"test_user\",\"email\":\"test@user.com\"}]";
         File.WriteAllText(fullPath, contents, Encoding.UTF8);
@@ -339,12 +339,12 @@ public class TableTests
     [Fact]
     public void InRealFileCanSavePageToFile()
     {
-        var databaseTableFilename = @"databaseCanSavePageToFile.txt";
+        var databaseTableFilename = @"databaseCanSavePageToFile";
         string fullPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), 
-            databaseTableFilename);
+            databaseTableFilename + ".txt");
         File.WriteAllText(fullPath, "", Encoding.UTF8);
-        var table = new Table(@"databaseCanSavePageToFile.txt");
+        var table = new Table(databaseTableFilename);
         var rows = Enumerable
             .Range(1, 16)
             .Select(x => new Row()
