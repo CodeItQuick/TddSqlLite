@@ -10,6 +10,15 @@ public class DbTableFileHandler : IDbFileHandler
     {
         _fullPath = Path.Combine(Environment
             .GetFolderPath(Environment.SpecialFolder.ApplicationData), filename);
+
+        var exists = File.Exists(_fullPath);
+        if (!exists)
+        {
+            File.WriteAllText(
+                _fullPath,
+                "",
+                Encoding.UTF8);
+        }
     }
 
     public void WriteToDb(IEnumerable<string> contents)

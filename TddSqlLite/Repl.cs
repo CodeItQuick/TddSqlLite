@@ -34,11 +34,11 @@ public class Repl
     };
 
 
-    public Repl(IConsoleWriteLineWrapper writeLine, IConsoleInputWrapper consoleInputWrapper)
+    public Repl(IConsoleWriteLineWrapper writeLine, IConsoleInputWrapper consoleInputWrapper, string databaseFileName)
     {
         _writeLine = writeLine;
         _consoleInputWrapper = consoleInputWrapper;
-        _table = new Table(@"database.txt");
+        _table = new Table(databaseFileName);
     }
     public Repl(IConsoleWriteLineWrapper writeLine, IConsoleInputWrapper consoleInputWrapper, Table table)
     {

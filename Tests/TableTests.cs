@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 using TddSqlLite;
 
@@ -8,7 +9,7 @@ public class TableTests
     [Fact]
     public void CannotInsertRowWithTooLongUsername()
     {
-        var table = new Table(@"database.txt");
+        var table = new Table(new FakeDbFileHandler());
         var row = new Row() { Id = 1, email = "test@user.com", username = string.Concat(Enumerable.Repeat("a", 256))};
         var page = new Page() { PageNum = 0, Rows = Array.Empty<Row>()};
         Assert.Throws<Exception>(() => table.SerializeRow(row));
@@ -16,7 +17,7 @@ public class TableTests
     [Fact]
     public void CannotInsertRowWithTooLongEmail()
     {
-        var table = new Table(@"database.txt");
+        var table = new Table(new FakeDbFileHandler());
         var row = new Row() { Id = 1, email = string.Concat(Enumerable.Repeat("a", 256)), username = "testuser"};
         var page = new Page() { PageNum = 0, Rows = Array.Empty<Row>()};
         Assert.Throws<Exception>(() => table.SerializeRow(row));
@@ -24,7 +25,7 @@ public class TableTests
     [Fact]
     public void CannotInsertRowWithNegativeId()
     {
-        var table = new Table(@"database.txt");
+        var table = new Table(new FakeDbFileHandler());
         var row = new Row() { Id = -1, email = "test@user.com", username = "testuser"};
         var page = new Page() { PageNum = 0, Rows = Array.Empty<Row>()};
         Assert.Throws<Exception>(() => table.SerializeRow(row));
@@ -46,7 +47,7 @@ public class TableTests
     [Fact]
     public void CanInsertRowsIntoExistingPage()
     {
-        var table = new Table(@"database.txt");
+        var table = new Table(new FakeDbFileHandler());
         var row1 = new Row()
         {
             Id = 1, email = "test@user.com", username = "test_user"
@@ -75,7 +76,7 @@ public class TableTests
     [Fact]
     public void CanInsertRowsIntoExistingPageAndRetrieveAllAvailable()
     {
-        var table = new Table(@"database.txt");
+        var table = new Table(new FakeDbFileHandler());
         var row1 = new Row()
         {
             Id = 1, email = "test@user.com", username = "test_user"
@@ -268,9 +269,43 @@ public class TableTests
         Assert.Equal(finalResult2, fakeDbWriter.RetrieveMessage()[3]);
     }
     [Fact]
+    public void CanRetrieveAlreadySavedFile()
+    {
+        var databaseTableFilename = @"canRetrieveSaveFile.txt";
+        string fullPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), 
+                databaseTableFilename);
+        var contents = 
+            "[{\"Id\":1,\"username\":\"test_user\",\"email\":\"test@user.com\"}," +
+            "{\"Id\":2,\"username\":\"test_user\",\"email\":\"test@user.com\"}]";
+        File.WriteAllText(fullPath, contents, Encoding.UTF8);
+        var table = new Table(databaseTableFilename);
+        var rows = Enumerable
+            .Range(3, 14)
+            .Select(x => new Row()
+            {
+                Id = x, email = "test@user.com", username = "test_user"
+            })
+            .ToArray();
+        foreach (var row in rows)
+        {
+            table.SerializeRow(row);
+        }
+
+        var readAllLines = File.ReadAllLines(fullPath);
+        Assert.Equal("[{\"Id\":1,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":2,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":3,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":4,\"username\":\"test_user\",\"email\":\"test@user.com\"}]", 
+            readAllLines.First());
+        Assert.Equal("[{\"Id\":5,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":6,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":7,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":8,\"username\":\"test_user\",\"email\":\"test@user.com\"}]", 
+            readAllLines.Skip(1).First());
+        Assert.Equal("[{\"Id\":9,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":10,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":11,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":12,\"username\":\"test_user\",\"email\":\"test@user.com\"}]", 
+            readAllLines.Skip(2).First());
+        Assert.Equal("[{\"Id\":13,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":14,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":15,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":16,\"username\":\"test_user\",\"email\":\"test@user.com\"}]", 
+            readAllLines.Skip(3).First());
+    }
+    [Fact]
     public void InRealFileCanSavePageToFile()
     {
-        var table = new Table(@"database.txt");
+        var table = new Table(@"databaseCanSavePageToFile.txt");
         var rows = Enumerable
             .Range(1, 16)
             .Select(x => new Row()
@@ -284,7 +319,7 @@ public class TableTests
         }
 
         string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        string fullPath = Path.Combine(path, @"database.txt");
+        string fullPath = Path.Combine(path, @"databaseCanSavePageToFile.txt");
         var readAllLines = File.ReadAllLines(fullPath);
         Assert.Equal("[{\"Id\":1,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":2,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":3,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":4,\"username\":\"test_user\",\"email\":\"test@user.com\"}]", 
             readAllLines.First());

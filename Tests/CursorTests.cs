@@ -7,7 +7,7 @@ public class CursorTests
     [Fact]
     public void CreateCursorAtBeginningOfTable()
     {
-        var table = new Table(@"database.txt");
+        var table = new Table(new FakeDbFileHandler());
         table.CreateCursorStart();
         
         Assert.Null(table.SelectRow());
@@ -15,7 +15,7 @@ public class CursorTests
     [Fact]
     public void CreateCursorAtBeginningOfTableWithDataInside()
     {
-        var table = new Table(@"databaseAtStart.txt");
+        var table = new Table(new FakeDbFileHandler());
         table.SerializeRow(new Row() { Id = 1, email = "test@user.com", username = "test-user"});
 
         var numRows = table.CreateCursorStart();
@@ -32,7 +32,7 @@ public class CursorTests
     [Fact]
     public void CreateCursorAtEndOfTableWithDataInside()
     {
-        var table = new Table(@"cursorAtEnd.txt");
+        var table = new Table(new FakeDbFileHandler());
         table.SerializeRow(new Row() { Id = 1, email = "test@user.com", username = "test-user"});
         table.SerializeRow(new Row() { Id = 2, email = "test@user.com", username = "test-user"});
         
@@ -49,7 +49,7 @@ public class CursorTests
     [Fact]
     public void AccessCursorAtStartOfTableWithDataInside()
     {
-        var table = new Table(@"cursorAtEnd.txt");
+        var table = new Table(new FakeDbFileHandler());
         table.SerializeRow(new Row() { Id = 1, email = "test@user.com", username = "test-user"});
         table.SerializeRow(new Row() { Id = 2, email = "test@user.com", username = "test-user"});
         table.CreateCursorStart();
@@ -67,7 +67,7 @@ public class CursorTests
     [Fact]
     public void AdvanceCursorAtStartOfTableWithDataInside()
     {
-        var table = new Table(@"cursorAtEnd.txt");
+        var table = new Table(new FakeDbFileHandler());
         table.SerializeRow(new Row() { Id = 1, email = "test@user.com", username = "test-user"});
         table.SerializeRow(new Row() { Id = 2, email = "test@user.com", username = "test-user"});
         table.CreateCursorStart();

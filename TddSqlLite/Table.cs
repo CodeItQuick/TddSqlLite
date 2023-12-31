@@ -12,6 +12,15 @@ public class Table
     public Table(string databaseTableFilename)
     {
         _dbFileHandler = new DbTableFileHandler(databaseTableFilename);
+        var existingData = _dbFileHandler.ReadFromDb();
+        var rows = existingData.Select(x =>  
+            JsonSerializer.Deserialize<Row[]>(x))
+            .ToList();
+        if (rows.Count == 1 && rows.First().Length == 2)
+        {
+            SerializeRow(rows.SelectMany(x => x.ToList()).FirstOrDefault());
+            SerializeRow(rows.SelectMany(x => x.ToList()).Skip(1).FirstOrDefault());
+        }
     }
 
     public Table(IDbFileHandler dbFileHandler)
