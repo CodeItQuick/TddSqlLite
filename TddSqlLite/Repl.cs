@@ -32,7 +32,8 @@ public class Repl
     {
         CREATE,
         INSERT,
-        SELECT
+        SELECT,
+        INSERT_INTO
     };
 
 
@@ -114,13 +115,26 @@ public class Repl
         {
             case STATEMENTS.CREATE:
                 return EXECUTE.SUCCESS;
-            case STATEMENTS.INSERT:
-                var commands = command.Split(" ");
+            case STATEMENTS.INSERT_INTO or STATEMENTS.INSERT:
+                string[] commands;
+                if (statement == STATEMENTS.INSERT_INTO)
+                {
+                    var startBracket = command.IndexOf("(", StringComparison.Ordinal) + 1;
+                    var endBracket = command.IndexOf(")", StringComparison.Ordinal);
+                    var valuesInsertLength = endBracket - startBracket;
+                    var inBrackets = command.Substring(startBracket, valuesInsertLength);
+                    commands = inBrackets.Split(",");
+                }
+                else
+                {
+                    commands = command.Split(" ")[1..];
+                }
+                
                 var insertRow = new Row()
                 {
-                    Id = Int32.Parse(commands.Skip(1).First()),
-                    username = commands.Skip(2).First(),
-                    email = commands.Skip(3).First(),
+                    Id = Int32.Parse(commands.Skip(0).First()),
+                    username = commands.Skip(1).First(),
+                    email = commands.Skip(2).First(),
                 };
                 try
                 {
@@ -156,6 +170,9 @@ public class Repl
         {
             case false:
                 return PREPARE_STATEMENTS.UNRECOGNIZED_STATEMENT;
+            case true when statement == STATEMENTS.INSERT && commands.Contains("INTO") && commands.Contains("VALUES"):
+                statement = STATEMENTS.INSERT_INTO;
+                return PREPARE_STATEMENTS.SUCCESS;
             case true when statement == STATEMENTS.INSERT && commands.Length < 3:
                 return PREPARE_STATEMENTS.SYNTAX_ERROR;
             default:

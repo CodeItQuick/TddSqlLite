@@ -149,6 +149,55 @@ public class ReplTests
         }, retrieveMessage.ToList(), true);
     }
     [Fact]
+    public void CanInsertBySpecifyingTableIntoDatabase()
+    {
+        var writeLineWrapper = new FakeConsoleWriteLineWrapper();
+        var commands = new Stack<string>();
+        commands.Push(".exit"); // exit
+        commands.Push("INSERT INTO database VALUES (1, error, causes@error.com)");
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler()));
+    
+        repl.Start();
+    
+        var retrieveMessage = writeLineWrapper.RetrieveMessage();
+        Assert.Contains(IntroText, retrieveMessage);
+        Assert.Equivalent(new List<string>()
+        {
+            "sqlite> ", // enter .exit
+            "Executed.",
+            "sqlite> ", // enter insert statement
+            IntroText // intro text
+        }, retrieveMessage.ToList(), true);
+    }
+    [Fact(Skip = "Unimplemented Acceptance Test #2")]
+    public void CanInsertNewTableIntoDatabase()
+    {
+        var writeLineWrapper = new FakeConsoleWriteLineWrapper();
+        var commands = new Stack<string>();
+        commands.Push(".exit"); // exit
+        commands.Push("INSERT INTO NameOfTable VALUES (1, 'error', 'causes@error.com')");
+        commands.Push("CREATE TABLE NameOfTable (" +
+                          "Id int," +
+                          "username VARCHAR," +
+                          "email VARCHAR" +
+                          ")");
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler()));
+    
+        repl.Start();
+    
+        var retrieveMessage = writeLineWrapper.RetrieveMessage();
+        Assert.Contains(IntroText, retrieveMessage);
+        Assert.Equivalent(new List<string>()
+        {
+            "sqlite> ", // enter .exit
+            "Failed to Insert Row. Already Exists.",
+            "sqlite> ", // enter failed insert statement
+            "Executed.",
+            "sqlite> ", // enter insert statement
+            IntroText // intro text
+        }, retrieveMessage.ToList(), true);
+    }
+    [Fact]
     public void CanRetrieveInsertedRowAfterClosingRepl()
     {
         var databaseTableFilename = @"databaseCanRetrieveAfterClosed.txt";
