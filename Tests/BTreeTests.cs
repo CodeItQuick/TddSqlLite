@@ -1,4 +1,6 @@
 using TddSqlLite;
+using TddSqlLite.Table;
+using TddSqlLite.Table.Internals;
 
 namespace Tests;
 

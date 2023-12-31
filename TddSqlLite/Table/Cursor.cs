@@ -1,4 +1,4 @@
-namespace TddSqlLite;
+namespace TddSqlLite.Table;
 
 public class Cursor
 {

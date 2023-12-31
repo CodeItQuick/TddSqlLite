@@ -1,3 +1,4 @@
+using TddSqlLite.Table;
 using Tests;
 
 namespace TddSqlLite;
@@ -7,7 +8,7 @@ public class Repl
     private readonly IConsoleWriteLineWrapper _writeLine;
     private readonly IConsoleInputWrapper _consoleInputWrapper;
     private Stack<string> _commands = new();
-    private Table _table;
+    private Table.Table _table;
 
     private enum META_COMMANDS
     {
@@ -39,9 +40,9 @@ public class Repl
     {
         _writeLine = writeLine;
         _consoleInputWrapper = consoleInputWrapper;
-        _table = new Table(databaseFileName);
+        _table = new Table.Table(databaseFileName);
     }
-    public Repl(IConsoleWriteLineWrapper writeLine, IConsoleInputWrapper consoleInputWrapper, Table table)
+    public Repl(IConsoleWriteLineWrapper writeLine, IConsoleInputWrapper consoleInputWrapper, Table.Table table)
     {
         _writeLine = writeLine;
         _consoleInputWrapper = consoleInputWrapper;
@@ -124,12 +125,12 @@ public class Repl
                 try
                 {
                     _table.SerializeRow(insertRow);
+                    return EXECUTE.SUCCESS;
                 }
                 catch
                 {
                     return EXECUTE.INSERT_ROW_FAIL;
                 }
-                return EXECUTE.SUCCESS;
             case STATEMENTS.SELECT:
                 
                 _writeLine.Print("Id\tusername\temail");

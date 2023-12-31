@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace TddSqlLite;
+namespace TddSqlLite.Table.Internals;
 
 public class Pager
 {

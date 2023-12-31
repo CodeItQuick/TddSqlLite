@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 using TddSqlLite;
+using TddSqlLite.Table;
 
 namespace Tests;
 
