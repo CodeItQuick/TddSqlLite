@@ -69,7 +69,7 @@ public class Repl
                 switch (metaCommand)
                 {
                     case META_COMMANDS.EXIT:
-                        // pop the last command off the stack to exit the loop
+                        // wipe all commands to exit program
                         _commands = new Stack<string>();
                         continue;
                     case META_COMMANDS.UNRECOGNIZED_COMMAND:
@@ -151,16 +151,16 @@ public class Repl
     {
         var commands = command.Split(" ");
         var firstCommand = commands.FirstOrDefault();
-        var tryParseStatement = Enum.TryParse(firstCommand, out statement);
-        if (statement != STATEMENTS.INSERT)
+        var isStatement = Enum.TryParse(firstCommand, out statement);
+        switch (isStatement)
         {
-            return tryParseStatement ? PREPARE_STATEMENTS.SUCCESS : PREPARE_STATEMENTS.UNRECOGNIZED_STATEMENT;
+            case false:
+                return PREPARE_STATEMENTS.UNRECOGNIZED_STATEMENT;
+            case true when statement == STATEMENTS.INSERT && commands.Length < 3:
+                return PREPARE_STATEMENTS.SYNTAX_ERROR;
+            default:
+                return PREPARE_STATEMENTS.SUCCESS;
         }
-        if (commands.Length < 3)
-        {
-            return PREPARE_STATEMENTS.SYNTAX_ERROR;
-        }
-        return tryParseStatement ? PREPARE_STATEMENTS.SUCCESS : PREPARE_STATEMENTS.UNRECOGNIZED_STATEMENT;
     }
 
     private META_COMMANDS MetaCommands(string command)
