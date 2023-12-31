@@ -1,7 +1,7 @@
 using System.Text.Json;
-using TddSqlLite.Table.Internals;
+using TddSqlLite.Database.Internals;
 
-namespace TddSqlLite.Table;
+namespace TddSqlLite.Database;
 
 public class Table
 {

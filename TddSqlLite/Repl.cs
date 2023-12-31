@@ -1,4 +1,4 @@
-using TddSqlLite.Table;
+using TddSqlLite.Database;
 using Tests;
 
 namespace TddSqlLite;
@@ -8,7 +8,8 @@ public class Repl
     private readonly IConsoleWriteLineWrapper _writeLine;
     private readonly IConsoleInputWrapper _consoleInputWrapper;
     private Stack<string> _commands = new();
-    private Table.Table _table;
+    private Table _table;
+    private Table[] _tables;
 
     private enum META_COMMANDS
     {
@@ -41,9 +42,9 @@ public class Repl
     {
         _writeLine = writeLine;
         _consoleInputWrapper = consoleInputWrapper;
-        _table = new Table.Table(databaseFileName);
+        _table = new Table(databaseFileName);
     }
-    public Repl(IConsoleWriteLineWrapper writeLine, IConsoleInputWrapper consoleInputWrapper, Table.Table table)
+    public Repl(IConsoleWriteLineWrapper writeLine, IConsoleInputWrapper consoleInputWrapper, Table table)
     {
         _writeLine = writeLine;
         _consoleInputWrapper = consoleInputWrapper;

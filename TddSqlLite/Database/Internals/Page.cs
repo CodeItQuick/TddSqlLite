@@ -1,4 +1,4 @@
-namespace TddSqlLite.Table.Internals;
+namespace TddSqlLite.Database.Internals;
 
 public class Page
 {

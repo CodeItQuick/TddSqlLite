@@ -1,8 +1,7 @@
 using System.Text;
 using System.Text.Json;
-using TddSqlLite;
-using TddSqlLite.Table;
-using TddSqlLite.Table.Internals;
+using TddSqlLite.Database;
+using TddSqlLite.Database.Internals;
 
 namespace Tests;
 
