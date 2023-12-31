@@ -212,5 +212,26 @@ public class BTreeTests
         Assert.Equal(8, bTree.GetNode(8).Id);
         Assert.Equal(3, bTree.GetNode(3).Id);
         Assert.Equal(14, bTree.GetNode(14).Id);
+    }[Fact]
+    public void CanInsertSevenDifferentNodesGetNodeIdx()
+    {
+        var bTree = new BTree();
+        
+        bTree.AddNode(new Row() { Id = 12, email = "test@user.com", username = "test-user" });
+        bTree.AddNode(new Row() { Id = 5, email = "test@user.com", username = "test-user" });
+        bTree.AddNode(new Row() { Id = 1, email = "test@user.com", username = "test-user" });
+        bTree.AddNode(new Row() { Id = 11, email = "test@user.com", username = "test-user" });
+        bTree.AddNode(new Row() { Id = 8, email = "test@user.com", username = "test-user" });
+        bTree.AddNode(new Row() { Id = 3, email = "test@user.com", username = "test-user" });
+        bTree.AddNode(new Row() { Id = 14, email = "test@user.com", username = "test-user" });
+
+        
+        Assert.Equal(1, bTree.GetNodeIdx(0).Id);
+        Assert.Equal(3, bTree.GetNodeIdx(1).Id);
+        Assert.Equal(5, bTree.GetNodeIdx(2).Id);
+        Assert.Equal(8, bTree.GetNodeIdx(3).Id);
+        Assert.Equal(11, bTree.GetNodeIdx(4).Id);
+        Assert.Equal(12, bTree.GetNodeIdx(5).Id);
+        Assert.Equal(14, bTree.GetNodeIdx(6).Id);
     }
 }

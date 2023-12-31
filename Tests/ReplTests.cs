@@ -246,4 +246,32 @@ public class ReplTests
         Assert.Equal(2, retrieveMessage.Count(x => x == "sqlite> ")); // two of these
         Assert.Equal(5, retrieveMessage.Count);
     }
+    
+    [Fact]
+    public void InsertNonContiguousRowsDoesNotCrashOnSelect()
+    {
+        var writeLineWrapper = new FakeConsoleWriteLineWrapper();
+        var commands = new Stack<string>();
+        commands.Push(".exit"); // exit
+        commands.Push("SELECT * FROM USERS;");
+        commands.Push("INSERT 3 dstack foo3@bar.com");
+        commands.Push("INSERT 1 cstack foo1@bar.com");
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands));
+
+        repl.Start();
+
+        var retrieveMessage = writeLineWrapper.RetrieveMessage();
+        Assert.Contains(IntroText, retrieveMessage);
+        Assert.Equivalent(new List<string>()
+        {
+            "sqlite> ", // enter .exit
+            "3\tdstack\tfoo3@bar.com",
+            "1\tcstack\tfoo1@bar.com",
+            "Id\tusername\temail",
+            "Executed.",
+            "sqlite> ", // enter create statement
+            IntroText // intro text
+        }, retrieveMessage.ToList());
+        Assert.Equal(11, retrieveMessage.Count);
+    }
 }

@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Tests;
 
 namespace TddSqlLite;
 
@@ -54,6 +53,6 @@ public class Pager
 
     public Row? SelectRow(Cursor cursorRow)
     {
-        return _bTree.GetNode(cursorRow.RowNum + 1);
+        return _bTree.GetNodeIdx(cursorRow.RowNum);
     }
 }

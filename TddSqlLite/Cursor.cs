@@ -1,6 +1,4 @@
-using TddSqlLite;
-
-namespace Tests;
+namespace TddSqlLite;
 
 public class Cursor
 {

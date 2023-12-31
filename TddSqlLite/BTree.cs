@@ -1,8 +1,4 @@
-using System.Collections;
-using System.Collections.Specialized;
-using TddSqlLite;
-
-namespace Tests;
+namespace TddSqlLite;
 
 public class BTree
 {
@@ -93,5 +89,19 @@ public class BTree
             }
         }
         return printBTree;
+    }
+
+    public Row? GetNodeIdx(int rowIdx)
+    {
+        if (_internalNodes.Count == 0)
+        {
+            return null;
+        }
+
+        var flattenedNodes = _internalNodes
+            .SelectMany(x => x.Value.Values)
+            .ToList();
+
+        return flattenedNodes[rowIdx];
     }
 }
