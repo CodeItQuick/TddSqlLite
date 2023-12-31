@@ -10,6 +10,7 @@ public class Repl
     private Stack<string> _commands = new();
     private Table _table;
     private Table[] _tables;
+    private IDbFileHandler _tableFileHandler;
 
     private enum META_COMMANDS
     {
@@ -34,7 +35,7 @@ public class Repl
         CREATE,
         INSERT,
         SELECT,
-        INSERT_INTO
+        INSERT_INTO,
     };
 
 
@@ -42,15 +43,17 @@ public class Repl
     {
         _writeLine = writeLine;
         _consoleInputWrapper = consoleInputWrapper;
-        _table = new Table("database");
+        _tableFileHandler = new DbTableFileHandler(databaseFileName);
+        _table = new Table("database"); // FIXME hardcoded
         _tables = new[] { _table };
     }
-    public Repl(IConsoleWriteLineWrapper writeLine, IConsoleInputWrapper consoleInputWrapper, Table table)
+    public Repl(IConsoleWriteLineWrapper writeLine, IConsoleInputWrapper consoleInputWrapper, Table table, IDbFileHandler fakeDbFileHandler)
     {
         _writeLine = writeLine;
         _consoleInputWrapper = consoleInputWrapper;
         _table = table;
         _tables = new[] { _table };
+        _tableFileHandler = fakeDbFileHandler;
     }
 
     public void Start()
@@ -93,7 +96,7 @@ public class Repl
                     continue;
                 case PREPARE_STATEMENTS.UNRECOGNIZED_STATEMENT:
                     _writeLine.Print($"Unrecognized keyword at start of '{command}'.");
-                    break;
+                    continue;
             }
 
             switch (ExecuteStatement(statement, command))
@@ -117,12 +120,32 @@ public class Repl
         switch (statement)
         {
             case STATEMENTS.CREATE:
+                // finding parameters
+                // FIXME: (irrelevant)
+                var createStartBracket = command.IndexOf("(", StringComparison.Ordinal) + 1;
+                var createEndBracket = command.IndexOf(")", StringComparison.Ordinal);
+                var createValuesInsertLength = createEndBracket - createStartBracket;
+                var createInBrackets = command.Substring(createStartBracket, createValuesInsertLength);
+                var createCommands = createInBrackets.Split(",");
+                // finding Table Name                    
+                var createStartTableName = command.IndexOf("TABLE", StringComparison.Ordinal) + 5;
+                var createEndTableName = command.IndexOf("(", StringComparison.Ordinal);
+                var createTableStringLength = createEndTableName - createStartTableName;
+                var createTableName = command
+                    .Substring(createStartTableName, createTableStringLength)
+                    .Trim();
+                _tableFileHandler.InjectFilename(createTableName + ".txt");
+                // var dbFileHandler = isTest ? _tableFileHandler : new DbTableFileHandler(createTableName);
+                _tables = _tables
+                    .Append(new Table(_tableFileHandler, createTableName))
+                    .ToArray();
                 return EXECUTE.SUCCESS;
             case STATEMENTS.INSERT_INTO or STATEMENTS.INSERT:
                 string[] commands;
                 var insertIntoTable = _table;
                 if (statement == STATEMENTS.INSERT_INTO)
                 {
+                    // finding parameters
                     var startBracket = command.IndexOf("(", StringComparison.Ordinal) + 1;
                     var endBracket = command.IndexOf(")", StringComparison.Ordinal);
                     var valuesInsertLength = endBracket - startBracket;
@@ -149,7 +172,7 @@ public class Repl
                 };
                 try
                 {
-                    _table.SerializeRow(insertRow);
+                    insertIntoTable.SerializeRow(insertRow);
                     return EXECUTE.SUCCESS;
                 }
                 catch
@@ -172,6 +195,7 @@ public class Repl
         }
     }
 
+    // FIXME: Move this to its own class
     private static PREPARE_STATEMENTS PrepareStatement(string command, out STATEMENTS statement)
     {
         var commands = command.Split(" ");

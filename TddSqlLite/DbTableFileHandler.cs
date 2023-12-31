@@ -39,4 +39,11 @@ public class DbTableFileHandler : IDbFileHandler
     {
         return File.ReadAllLines(_fullPath);
     }
+
+    public void InjectFilename(string filename)
+    {
+        
+        _fullPath = Path.Combine(Environment
+            .GetFolderPath(Environment.SpecialFolder.ApplicationData), filename);
+    }
 }

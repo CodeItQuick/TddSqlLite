@@ -1,10 +1,11 @@
 using TddSqlLite;
+using Index = System.Index;
 
 namespace Tests;
 
 public class FakeDbFileHandler : IDbFileHandler
 {
-    private readonly Dictionary<Index, Dictionary<int, string>> _message = new();
+    private Dictionary<Index, Dictionary<int, string>> _message = new();
 
     public void WriteToDb(IEnumerable<string> contents)
     {
@@ -17,6 +18,11 @@ public class FakeDbFileHandler : IDbFileHandler
     public string[] ReadFromDb()
     {
         return _message[_message.Keys.Last()].Values.ToArray();
+    }
+
+    public void InjectFilename(string filename)
+    {
+        _message = new Dictionary<Index, Dictionary<int, string>>();
     }
 
     public List<string> RetrieveMessage()

@@ -18,7 +18,7 @@ public class ReplTests
         var commands = new Stack<string>();
         commands.Push(".exit");
         var fakeConsoleInputWrapper = new FakeConsoleInputWrapper(commands);
-        var repl = new Repl(writeLineWrapper, fakeConsoleInputWrapper, new Table(new FakeDbFileHandler(), "database"));
+        var repl = new Repl(writeLineWrapper, fakeConsoleInputWrapper, new Table(new FakeDbFileHandler(), "database"), new FakeDbFileHandler());
 
         repl.Start();
 
@@ -35,7 +35,7 @@ public class ReplTests
         var commands = new Stack<string>();
         commands.Push(".exit"); // exit
         commands.Push("CREATE table users (id int, username varchar(255), email varchar(255));");
-        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"));
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"), new FakeDbFileHandler());
 
         repl.Start();
 
@@ -58,7 +58,7 @@ public class ReplTests
         var commands = new Stack<string>();
         commands.Push(".exit"); // exit
         commands.Push("INSERT 1");
-        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"));
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"), new FakeDbFileHandler());
 
         repl.Start();
 
@@ -81,7 +81,7 @@ public class ReplTests
         var commands = new Stack<string>();
         commands.Push(".exit"); // exit
         commands.Push("INSERT 1 cstack foo@bar.com");
-        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"));
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"), new FakeDbFileHandler());
 
         repl.Start();
 
@@ -104,7 +104,7 @@ public class ReplTests
         commands.Push(".exit"); // exit
         commands.Push("SELECT * FROM cstack");
         commands.Push("INSERT 1 cstack foo@bar.com");
-        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"));
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"), new FakeDbFileHandler());
 
         repl.Start();
 
@@ -131,7 +131,7 @@ public class ReplTests
         commands.Push(".exit"); // exit
         commands.Push("INSERT 1 error causes@error.com");
         commands.Push("INSERT 1 cstack foo@bar.com");
-        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"));
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"), new FakeDbFileHandler());
 
         repl.Start();
 
@@ -154,7 +154,7 @@ public class ReplTests
         var commands = new Stack<string>();
         commands.Push(".exit"); // exit
         commands.Push("INSERT INTO database VALUES (1, user, user@test.com)");
-        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"));
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"), new FakeDbFileHandler());
     
         repl.Start();
     
@@ -168,19 +168,24 @@ public class ReplTests
             IntroText // intro text
         }, retrieveMessage.ToList(), true);
     }
-    [Fact(Skip = "Unimplemented Acceptance Test #2")]
+    [Fact]
     public void CanInsertNewTableIntoDatabase()
     {
         var writeLineWrapper = new FakeConsoleWriteLineWrapper();
         var commands = new Stack<string>();
         commands.Push(".exit"); // exit
-        commands.Push("INSERT INTO NameOfTable VALUES (1, 'error', 'causes@error.com')");
+        commands.Push("INSERT INTO NameOfTable VALUES (3, testusername, test@user.com)");
         commands.Push("CREATE TABLE NameOfTable (" +
                           "Id int," +
                           "username VARCHAR," +
                           "email VARCHAR" +
                           ")");
-        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"));
+        var fakeDbFileHandler = new FakeDbFileHandler();
+        var repl = new Repl(
+            writeLineWrapper, 
+            new FakeConsoleInputWrapper(commands), 
+            new Table(fakeDbFileHandler, "database"), 
+            fakeDbFileHandler);
     
         repl.Start();
     
@@ -189,10 +194,10 @@ public class ReplTests
         Assert.Equivalent(new List<string>()
         {
             "sqlite> ", // enter .exit
-            "Failed to Insert Row. Already Exists.",
-            "sqlite> ", // enter failed insert statement
             "Executed.",
             "sqlite> ", // enter insert statement
+            "Executed.",
+            "sqlite> ", // enter create statement
             IntroText // intro text
         }, retrieveMessage.ToList(), true);
     }
@@ -209,12 +214,12 @@ public class ReplTests
         commands.Push(".exit"); // exit
         commands.Push("INSERT 1 cstack foo@bar.com");
         var table = new Table(databaseTableFilename);
-        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), table);
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), table, new FakeDbFileHandler());
         var writeLineWrapperRetrieval = new FakeConsoleWriteLineWrapper();
         var commandsRetrieval = new Stack<string>();
         commandsRetrieval.Push(".exit"); // exit
         commandsRetrieval.Push("SELECT * FROM cstack");
-        var replRetrieve = new Repl(writeLineWrapperRetrieval, new FakeConsoleInputWrapper(commandsRetrieval), table);
+        var replRetrieve = new Repl(writeLineWrapperRetrieval, new FakeConsoleInputWrapper(commandsRetrieval), table, new FakeDbFileHandler());
         repl.Start();
 
         replRetrieve.Start();
@@ -243,7 +248,7 @@ public class ReplTests
         commands.Push("INSERT 3 dstack foo3@bar.com");
         commands.Push("INSERT 2 astack foo2@bar.com");
         commands.Push("INSERT 1 cstack foo1@bar.com");
-        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"));
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"), new FakeDbFileHandler());
 
         repl.Start();
 
@@ -270,7 +275,7 @@ public class ReplTests
         var commands = new Stack<string>();
         commands.Push(".exit"); // exit
         commands.Push("invalid command");
-        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"));
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"), new FakeDbFileHandler());
 
         repl.Start();
 
@@ -281,7 +286,7 @@ public class ReplTests
                         "database.", retrieveMessage);
         Assert.Contains("Unrecognized keyword at start of 'invalid command'.", retrieveMessage);
         Assert.Equal(2, retrieveMessage.Count(x => x == "sqlite> ")); // two of these
-        Assert.Equal(5, retrieveMessage.Count);
+        Assert.Equal(4, retrieveMessage.Count);
     }
 
     [Fact]
@@ -291,7 +296,7 @@ public class ReplTests
         var commands = new Stack<string>();
         commands.Push(".exit"); // exit
         commands.Push(".invalidcommand");
-        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"));
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"), new FakeDbFileHandler());
 
         repl.Start();
 
@@ -312,7 +317,7 @@ public class ReplTests
         var commands = new Stack<string>();
         commands.Push(".exit"); // exit
         commands.Push("invalid command");
-        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"));
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"), new FakeDbFileHandler());
 
         repl.Start();
 
@@ -323,7 +328,7 @@ public class ReplTests
                         "database.", retrieveMessage);
         Assert.Contains("Unrecognized keyword at start of 'invalid command'.", retrieveMessage);
         Assert.Equal(2, retrieveMessage.Count(x => x == "sqlite> ")); // two of these
-        Assert.Equal(5, retrieveMessage.Count);
+        Assert.Equal(4, retrieveMessage.Count);
     }
     
     [Fact]
@@ -335,7 +340,7 @@ public class ReplTests
         commands.Push("SELECT * FROM USERS;");
         commands.Push("INSERT 3 dstack foo3@bar.com");
         commands.Push("INSERT 1 cstack foo1@bar.com");
-        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"));
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"), new FakeDbFileHandler());
 
         repl.Start();
 
