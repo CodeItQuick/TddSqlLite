@@ -34,7 +34,7 @@ public class ReplTests
         var writeLineWrapper = new FakeConsoleWriteLineWrapper();
         var commands = new Stack<string>();
         commands.Push(".exit"); // exit
-        commands.Push("CREATE table users (id int, username varchar(255), email varchar(255));");
+        commands.Push("CREATE TABLE users (id int, username varchar, email varchar)");
         var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"), new FakeDbFileHandler());
 
         repl.Start();
@@ -102,7 +102,7 @@ public class ReplTests
         var writeLineWrapper = new FakeConsoleWriteLineWrapper();
         var commands = new Stack<string>();
         commands.Push(".exit"); // exit
-        commands.Push("SELECT * FROM cstack");
+        commands.Push("SELECT * FROM database");
         commands.Push("INSERT 1 cstack foo@bar.com");
         var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"), new FakeDbFileHandler());
 
@@ -202,13 +202,51 @@ public class ReplTests
         }, retrieveMessage.ToList(), true);
     }
     [Fact]
+    public void CanSelectFromNewTableAfterInsert()
+    {
+        var writeLineWrapper = new FakeConsoleWriteLineWrapper();
+        var commands = new Stack<string>();
+        commands.Push(".exit"); // exit
+        commands.Push("SELECT * FROM NameOfTable");
+        commands.Push("INSERT INTO NameOfTable VALUES (3, testusername, test@user.com)");
+        commands.Push("CREATE TABLE NameOfTable (" +
+                          "Id int," +
+                          "username VARCHAR," +
+                          "email VARCHAR" +
+                          ")");
+        var fakeDbFileHandler = new FakeDbFileHandler();
+        var repl = new Repl(
+            writeLineWrapper, 
+            new FakeConsoleInputWrapper(commands), 
+            new Table(fakeDbFileHandler, "database"), 
+            fakeDbFileHandler);
+    
+        repl.Start();
+    
+        var retrieveMessage = writeLineWrapper.RetrieveMessage();
+        Assert.Contains(IntroText, retrieveMessage);
+        Assert.Equivalent(new List<string>()
+        {
+            "sqlite> ", // enter .exit
+            "3\ttestusername\ttest@user.com",
+            "Id\tusername\temail",
+            "Executed.",
+            "sqlite> ", // enter select statement
+            "Executed.",
+            "sqlite> ", // enter insert statement
+            "Executed.",
+            "sqlite> ", // enter create statement
+            IntroText // intro text
+        }, retrieveMessage.ToList(), true);
+    }
+    [Fact]
     public void CanRetrieveInsertedRowAfterClosingRepl()
     {
-        var databaseTableFilename = @"databaseCanRetrieveAfterClosed.txt";
+        var databaseTableFilename = @"databaseCanRetrieveAfterClosed";
         string fullPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), 
             databaseTableFilename);
-        File.WriteAllText(fullPath, "", Encoding.UTF8);
+        File.WriteAllText(fullPath + ".txt", "", Encoding.UTF8);
         var writeLineWrapper = new FakeConsoleWriteLineWrapper();
         var commands = new Stack<string>();
         commands.Push(".exit"); // exit
@@ -218,7 +256,7 @@ public class ReplTests
         var writeLineWrapperRetrieval = new FakeConsoleWriteLineWrapper();
         var commandsRetrieval = new Stack<string>();
         commandsRetrieval.Push(".exit"); // exit
-        commandsRetrieval.Push("SELECT * FROM cstack");
+        commandsRetrieval.Push("SELECT * FROM databaseCanRetrieveAfterClosed");
         var replRetrieve = new Repl(writeLineWrapperRetrieval, new FakeConsoleInputWrapper(commandsRetrieval), table, new FakeDbFileHandler());
         repl.Start();
 
@@ -244,7 +282,7 @@ public class ReplTests
         var writeLineWrapper = new FakeConsoleWriteLineWrapper();
         var commands = new Stack<string>();
         commands.Push(".exit"); // exit
-        commands.Push("SELECT * FROM USERS;");
+        commands.Push("SELECT * FROM database");
         commands.Push("INSERT 3 dstack foo3@bar.com");
         commands.Push("INSERT 2 astack foo2@bar.com");
         commands.Push("INSERT 1 cstack foo1@bar.com");
@@ -337,7 +375,7 @@ public class ReplTests
         var writeLineWrapper = new FakeConsoleWriteLineWrapper();
         var commands = new Stack<string>();
         commands.Push(".exit"); // exit
-        commands.Push("SELECT * FROM USERS;");
+        commands.Push("SELECT * FROM database");
         commands.Push("INSERT 3 dstack foo3@bar.com");
         commands.Push("INSERT 1 cstack foo1@bar.com");
         var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), new Table(new FakeDbFileHandler(), "database"), new FakeDbFileHandler());

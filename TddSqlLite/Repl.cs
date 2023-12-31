@@ -28,7 +28,8 @@ public class Repl
     {
         SUCCESS,
         TABLE_FULL,
-        INSERT_ROW_FAIL
+        INSERT_ROW_FAIL,
+        SELECT_MISSING_TABLE_FAIL
     }
     private enum STATEMENTS
     {
@@ -107,6 +108,9 @@ public class Repl
                 case EXECUTE.INSERT_ROW_FAIL:
                     _writeLine.Print("Failed to Insert Row. Already Exists.");
                     break;
+                case EXECUTE.SELECT_MISSING_TABLE_FAIL:
+                    _writeLine.Print("Failed to Select Table. Table does not exist.");
+                    break;
                 case EXECUTE.TABLE_FULL:
                     _writeLine.Print("Table is Full.");
                     break;
@@ -122,20 +126,19 @@ public class Repl
             case STATEMENTS.CREATE:
                 // finding parameters
                 // FIXME: (irrelevant)
-                var createStartBracket = command.IndexOf("(", StringComparison.Ordinal) + 1;
-                var createEndBracket = command.IndexOf(")", StringComparison.Ordinal);
+                var createStartBracket = command.IndexOf("(", StringComparison.OrdinalIgnoreCase) + 1;
+                var createEndBracket = command.IndexOf(")", StringComparison.OrdinalIgnoreCase);
                 var createValuesInsertLength = createEndBracket - createStartBracket;
                 var createInBrackets = command.Substring(createStartBracket, createValuesInsertLength);
                 var createCommands = createInBrackets.Split(",");
                 // finding Table Name                    
-                var createStartTableName = command.IndexOf("TABLE", StringComparison.Ordinal) + 5;
-                var createEndTableName = command.IndexOf("(", StringComparison.Ordinal);
+                var createStartTableName = command.IndexOf("TABLE", StringComparison.OrdinalIgnoreCase) + 5;
+                var createEndTableName = command.IndexOf("(", StringComparison.OrdinalIgnoreCase);
                 var createTableStringLength = createEndTableName - createStartTableName;
                 var createTableName = command
                     .Substring(createStartTableName, createTableStringLength)
                     .Trim();
                 _tableFileHandler.InjectFilename(createTableName + ".txt");
-                // var dbFileHandler = isTest ? _tableFileHandler : new DbTableFileHandler(createTableName);
                 _tables = _tables
                     .Append(new Table(_tableFileHandler, createTableName))
                     .ToArray();
@@ -152,8 +155,8 @@ public class Repl
                     var inBrackets = command.Substring(startBracket, valuesInsertLength);
                     commands = inBrackets.Split(",");
                     // finding Table Name                    
-                    var startTableName = command.IndexOf("INTO", StringComparison.Ordinal) + 4;
-                    var endTableName = command.IndexOf("VALUES", StringComparison.Ordinal);
+                    var startTableName = command.IndexOf("INTO", StringComparison.OrdinalIgnoreCase) + 4;
+                    var endTableName = command.IndexOf("VALUES", StringComparison.OrdinalIgnoreCase);
                     var tableStringLength = endTableName - startTableName;
                     var tableName = command.Substring(startTableName, tableStringLength)
                                                 .Trim();
@@ -167,8 +170,8 @@ public class Repl
                 var insertRow = new Row()
                 {
                     Id = Int32.Parse(commands.Skip(0).First()),
-                    username = commands.Skip(1).First(),
-                    email = commands.Skip(2).First(),
+                    username = commands.Skip(1).First().Trim(),
+                    email = commands.Skip(2).First().Trim(),
                 };
                 try
                 {
@@ -181,13 +184,22 @@ public class Repl
                 }
             case STATEMENTS.SELECT:
                 
+                var selectedTable = command.Split(" ")[^1];
+                try
+                {
+                    insertIntoTable = _tables.First(table => table.IsTableName(selectedTable));
+                }
+                catch
+                {
+                    return EXECUTE.SELECT_MISSING_TABLE_FAIL; // FIXME: write test around this failure
+                }
                 _writeLine.Print("Id\tusername\temail");
-                var numRows = _table.CreateCursorStart();
+                var numRows = insertIntoTable.CreateCursorStart();
                 for (var rowIdx = 0; rowIdx < numRows; rowIdx++)
                 {
-                    var row = _table.SelectRow();
+                    var row = insertIntoTable.SelectRow();
                     _writeLine.Print($"{row.Id}\t{row.username}\t{row.email}");
-                    _table.AdvanceCursor();
+                    insertIntoTable.AdvanceCursor();
                 }
                 return EXECUTE.SUCCESS;
             default:
