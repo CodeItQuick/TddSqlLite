@@ -50,6 +50,32 @@ public class ReplTests
             IntroText // intro text
         }, retrieveMessage.ToList());
     }
+    [Fact]
+    public void ThrowsErrorWhenTableMissing()
+    {
+        var writeLineWrapper = new FakeConsoleWriteLineWrapper();
+        var commands = new Stack<string>();
+        commands.Push(".exit"); // exit
+        commands.Push("SELECT * FROM MissingTable");
+        var repl = new Repl(
+            writeLineWrapper, 
+            new FakeConsoleInputWrapper(commands), 
+            new Table(new FakeDbFileHandler(), "database"), 
+            new FakeDbFileHandler());
+
+        repl.Start();
+
+        var retrieveMessage = writeLineWrapper.RetrieveMessage();
+        Assert.Contains(IntroText, retrieveMessage);
+        Assert.Equal(4, retrieveMessage.Count);
+        Assert.Equivalent(new List<string>()
+        {
+            "sqlite> ", // enter .exit
+            "Failed to Select Table. Table does not exist.",
+            "sqlite> ", // enter create statement
+            IntroText // intro text
+        }, retrieveMessage.ToList(), true);
+    }
 
     [Fact]
     public void CanStartReplWithTwoStatementInsertCommandCreatesSyntaxError()

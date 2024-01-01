@@ -191,7 +191,7 @@ public class Repl
                 }
                 catch
                 {
-                    return EXECUTE.SELECT_MISSING_TABLE_FAIL; // FIXME: write test around this failure
+                    return EXECUTE.SELECT_MISSING_TABLE_FAIL;
                 }
                 _writeLine.Print("Id\tusername\temail");
                 var numRows = insertIntoTable.CreateCursorStart();
