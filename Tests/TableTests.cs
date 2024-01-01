@@ -367,4 +367,76 @@ public class TableTests
         Assert.Equal("[{\"Id\":13,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":14,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":15,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":16,\"username\":\"test_user\",\"email\":\"test@user.com\"}]", 
             readAllLines.Skip(3).First());
     }
+    [Fact]
+    public void CanConstructRowWithId()
+    {
+        var table = new Table(new FakeDbFileHandler(), "user");
+        var row = new Row()
+            {
+                IntColumns = new System.Collections.Generic.Dictionary<string, int>()
+                {
+                    ["Id"] = 1
+                }, 
+                email = "test@user.com", 
+                username = "test_user"
+            };
+        table.SerializeRow(row);
+
+        var readAllLines = table.DeserializePage(0).ToList().First();
+        Assert.Equivalent(new Row()
+            {
+                Id = 1, 
+                email = "test@user.com", 
+                username = "test_user"
+            }, 
+            readAllLines, true);
+    }
+    [Fact]
+    public void CanConstructRowWithUsername()
+    {
+        var table = new Table(new FakeDbFileHandler(), "user");
+        var row = new Row()
+            {
+                StringColumns = new System.Collections.Generic.Dictionary<string, string>()
+                {
+                    ["username"] = "test_user"
+                }, 
+                email = "test@user.com", 
+                Id = 1
+            };
+        table.SerializeRow(row);
+
+        var readAllLines = table.DeserializePage(0).ToList().First();
+        Assert.Equivalent(new Row()
+            {
+                Id = 1, 
+                email = "test@user.com", 
+                username = "test_user"
+            }, 
+            readAllLines, true);
+    }
+    [Fact]
+    public void CanConstructRowWithEmail()
+    {
+        var table = new Table(new FakeDbFileHandler(), "user");
+        var row = new Row()
+            {
+                StringColumns = new System.Collections.Generic.Dictionary<string, string>()
+                {
+                    ["email"] = "test@user.com"
+                }, 
+                username = "test_user", 
+                Id = 1
+            };
+        table.SerializeRow(row);
+
+        var readAllLines = table.DeserializePage(0).ToList().First();
+        Assert.Equivalent(new Row()
+            {
+                Id = 1, 
+                email = "test@user.com", 
+                username = "test_user"
+            }, 
+            readAllLines, true);
+    }
 }
