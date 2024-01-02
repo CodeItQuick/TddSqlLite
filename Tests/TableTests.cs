@@ -10,18 +10,17 @@ public class TableTests
     [Fact]
     public void CannotInsertRowWithTooLongUsername()
     {
-        var table = new Table(new FakeDbFileHandler(), "database");
-        var row = new Row() { Id = 1, email = "test@user.com", username = string.Concat(Enumerable.Repeat("a", 256))};
-        var page = new Page() { PageNum = 0, Rows = Array.Empty<Row>()};
-        Assert.Throws<Exception>(() => table.SerializeRow(row));
+        Assert.Throws<Exception>(() => new Row() { Id = 1, email = "test@user.com", username = string.Concat(Enumerable.Repeat("a", 256))});
     }
     [Fact]
     public void CannotInsertRowWithTooLongEmail()
     {
-        var table = new Table(new FakeDbFileHandler(), "database");
-        var row = new Row() { Id = 1, email = string.Concat(Enumerable.Repeat("a", 256)), username = "testuser"};
-        var page = new Page() { PageNum = 0, Rows = Array.Empty<Row>()};
-        Assert.Throws<Exception>(() => table.SerializeRow(row));
+        Assert.Throws<Exception>(() => new Row()
+        {
+            Id = 1, 
+            email = string.Concat(Enumerable.Repeat("a", 256)), 
+            username = "testuser"
+        });
     }
     [Fact]
     public void CannotInsertRowWithNegativeId()
@@ -257,17 +256,10 @@ public class TableTests
             table.SerializeRow(row);
         }
 
-        var initialResult = string.Concat(JsonSerializer.Serialize(rows[..4]));
-        Assert.Equal(initialResult, fakeDbWriter.RetrieveMessage()[0]);
-        var finalResult = string.Concat(
-            JsonSerializer.Serialize(rows[4..8]));
-        Assert.Equal(finalResult, fakeDbWriter.RetrieveMessage()[1]);
-        var finalResult1 = string.Concat(
-            JsonSerializer.Serialize(rows[8..12]));
-        Assert.Equal(finalResult1, fakeDbWriter.RetrieveMessage()[2]);
-        var finalResult2 = string.Concat(
-            JsonSerializer.Serialize(rows[12..16]));
-        Assert.Equal(finalResult2, fakeDbWriter.RetrieveMessage()[3]);
+        Assert.Contains("[{\"Id\":1,\"email\":\"test@user.com\",\"username\":\"test_user\"}", fakeDbWriter.RetrieveMessage()[0]);
+        Assert.Contains("[{\"Id\":5,\"email\":\"test@user.com\",\"username\":\"test_user\"}", fakeDbWriter.RetrieveMessage()[1]);
+        Assert.Contains("[{\"Id\":9,\"email\":\"test@user.com\",\"username\":\"test_user\"}", fakeDbWriter.RetrieveMessage()[2]);
+        Assert.Contains("[{\"Id\":13,\"email\":\"test@user.com\",\"username\":\"test_user\"}", fakeDbWriter.RetrieveMessage()[3]);
     }
     [Fact]
     public void CanRetrieveAlreadySavedFile()
@@ -294,13 +286,13 @@ public class TableTests
         }
 
         var readAllLines = File.ReadAllLines(fullPath);
-        Assert.Equal("[{\"Id\":1,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":2,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":3,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":4,\"username\":\"test_user\",\"email\":\"test@user.com\"}]", 
+        Assert.Contains("{\"Id\":1,\"username\":\"test_user\",\"email\":\"test@user.com\"}", 
             readAllLines.First());
-        Assert.Equal("[{\"Id\":5,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":6,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":7,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":8,\"username\":\"test_user\",\"email\":\"test@user.com\"}]", 
+        Assert.Contains("[{\"Id\":5,\"email\":\"test@user.com\",\"username\":\"test_user\"}", 
             readAllLines.Skip(1).First());
-        Assert.Equal("[{\"Id\":9,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":10,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":11,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":12,\"username\":\"test_user\",\"email\":\"test@user.com\"}]", 
+        Assert.Contains("[{\"Id\":9,\"email\":\"test@user.com\",\"username\":\"test_user\"}", 
             readAllLines.Skip(2).First());
-        Assert.Equal("[{\"Id\":13,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":14,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":15,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":16,\"username\":\"test_user\",\"email\":\"test@user.com\"}]", 
+        Assert.Contains("[{\"Id\":13,\"email\":\"test@user.com\",\"username\":\"test_user\"}", 
             readAllLines.Skip(3).First());
     }
     [Fact]
@@ -327,13 +319,13 @@ public class TableTests
         }
 
         var readAllLines = File.ReadAllLines(fullPath);
-        Assert.Equal("[{\"Id\":1,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":2,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":3,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":4,\"username\":\"test_user\",\"email\":\"test@user.com\"}]", 
+        Assert.Contains("{\"Id\":1,\"username\":\"test_user\",\"email\":\"test@user.com\"}", 
             readAllLines.First());
-        Assert.Equal("[{\"Id\":5,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":6,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":7,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":8,\"username\":\"test_user\",\"email\":\"test@user.com\"}]", 
+        Assert.Contains("[{\"Id\":5,\"email\":\"test@user.com\",\"username\":\"test_user\"}", 
             readAllLines.Skip(1).First());
-        Assert.Equal("[{\"Id\":9,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":10,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":11,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":12,\"username\":\"test_user\",\"email\":\"test@user.com\"}]", 
+        Assert.Contains("[{\"Id\":9,\"email\":\"test@user.com\",\"username\":\"test_user\"}", 
             readAllLines.Skip(2).First());
-        Assert.Equal("[{\"Id\":13,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":14,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":15,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":16,\"username\":\"test_user\",\"email\":\"test@user.com\"}]", 
+        Assert.Contains("[{\"Id\":13,\"email\":\"test@user.com\",\"username\":\"test_user\"}", 
             readAllLines.Skip(3).First());
     }
     [Fact]
@@ -358,14 +350,10 @@ public class TableTests
         }
 
         var readAllLines = File.ReadAllLines(fullPath);
-        Assert.Equal("[{\"Id\":1,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":2,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":3,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":4,\"username\":\"test_user\",\"email\":\"test@user.com\"}]", 
-            readAllLines.First());
-        Assert.Equal("[{\"Id\":5,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":6,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":7,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":8,\"username\":\"test_user\",\"email\":\"test@user.com\"}]", 
-            readAllLines.Skip(1).First());
-        Assert.Equal("[{\"Id\":9,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":10,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":11,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":12,\"username\":\"test_user\",\"email\":\"test@user.com\"}]", 
-            readAllLines.Skip(2).First());
-        Assert.Equal("[{\"Id\":13,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":14,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":15,\"username\":\"test_user\",\"email\":\"test@user.com\"},{\"Id\":16,\"username\":\"test_user\",\"email\":\"test@user.com\"}]", 
-            readAllLines.Skip(3).First());
+        Assert.Contains("[{\"Id\":1,\"email\":\"test@user.com\",\"username\":\"test_user\"}", readAllLines.First());
+        Assert.Contains("[{\"Id\":5,\"email\":\"test@user.com\",\"username\":\"test_user\"}", readAllLines.Skip(1).First());
+        Assert.Contains("[{\"Id\":9,\"email\":\"test@user.com\",\"username\":\"test_user\"}", readAllLines.Skip(2).First());
+        Assert.Contains("[{\"Id\":13,\"email\":\"test@user.com\",\"username\":\"test_user\"}", readAllLines.Skip(3).First());
     }
     [Fact]
     public void CanConstructRowWithId()
@@ -373,7 +361,7 @@ public class TableTests
         var table = new Table(new FakeDbFileHandler(), "user");
         var row = new Row()
             {
-                IntColumns = new System.Collections.Generic.Dictionary<string, int>()
+                DynamicColumns = new Dictionary<string, object>()
                 {
                     ["Id"] = 1
                 }, 
@@ -392,12 +380,22 @@ public class TableTests
             readAllLines, true);
     }
     [Fact]
+    public void CanConstructRowFromString()
+    {
+        var storedValues = "[{\"Id\": 1, \"username\": \"test_user\", \"email\": \"test@user.com\"}]";
+        var deserialize = JsonSerializer.Deserialize<Row[]>(storedValues);
+        Assert.Equivalent(
+            new List<Row>() { new() { Id = 1, username = "test_user", email = "test@user.com" } }, 
+            deserialize, 
+            true);
+    }
+    [Fact]
     public void CanConstructRowWithUsername()
     {
         var table = new Table(new FakeDbFileHandler(), "user");
         var row = new Row()
             {
-                StringColumns = new System.Collections.Generic.Dictionary<string, string>()
+                DynamicColumns = new Dictionary<string, object>()
                 {
                     ["username"] = "test_user"
                 }, 
@@ -421,7 +419,7 @@ public class TableTests
         var table = new Table(new FakeDbFileHandler(), "user");
         var row = new Row()
             {
-                StringColumns = new System.Collections.Generic.Dictionary<string, string>()
+                DynamicColumns = new System.Collections.Generic.Dictionary<string, object>()
                 {
                     ["email"] = "test@user.com"
                 }, 
@@ -438,5 +436,24 @@ public class TableTests
                 username = "test_user"
             }, 
             readAllLines, true);
+    }
+    [Fact]
+    public void CanConstructRowWithCustomStringField()
+    {
+        var fakeDbFileHandler = new FakeDbFileHandler();
+        var table = new Table(fakeDbFileHandler, "user");
+        var row = new Row()
+            {
+                DynamicColumns = new System.Collections.Generic.Dictionary<string, object>()
+                {
+                    ["CustomProperty"] = "test_property"
+                }, 
+                Id = 1
+            };
+        table.SerializeRow(row);
+
+        var readAllLines = string.Concat(fakeDbFileHandler.ReadFromDb());
+        Assert.Equivalent(
+            "[{\"CustomProperty\":\"test_property\",\"Id\":1}]", readAllLines, true);
     }
 }

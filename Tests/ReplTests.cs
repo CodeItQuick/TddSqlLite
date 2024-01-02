@@ -226,6 +226,35 @@ public class ReplTests
             "sqlite> ", // enter create statement
             IntroText // intro text
         }, retrieveMessage.ToList(), true);
+    }[Fact]
+    public void DoesNotCrashOnBadCreateInput()
+    {
+        var writeLineWrapper = new FakeConsoleWriteLineWrapper();
+        var commands = new Stack<string>();
+        var fakeDbFileHandler = new FakeDbFileHandler();
+        commands.Push(".exit"); // exit
+        commands.Push("CREATE TABLE NameOfTable (" +
+                      "Id int," +
+                      "username VARCHAR," +
+                      "email VARCHAR" +
+                      "error");
+        var repl = new Repl(
+            writeLineWrapper, 
+            new FakeConsoleInputWrapper(commands), 
+            new Table(fakeDbFileHandler, "database"), 
+            fakeDbFileHandler);
+    
+        repl.Start();
+    
+        var retrieveMessage = writeLineWrapper.RetrieveMessage();
+        Assert.Contains(IntroText, retrieveMessage);
+        Assert.Equivalent(new List<string>()
+        {
+            "sqlite> ", // enter exit statement
+            "Parse Error - could not read statement.",
+            "sqlite> ", // enter create statement
+            IntroText // intro text
+        }, retrieveMessage.ToList(), true);
     }
     [Fact]
     public void CanSelectFromNewTableAfterInsert()

@@ -1,3 +1,5 @@
+using System.Collections.Specialized;
+
 namespace TddSqlLite.Database.Internals;
 
 public class BTree
@@ -75,9 +77,22 @@ public class BTree
             .SelectMany(x => x.Value.Values)
             .ToList();
     }
-    public SortedList<int, Dictionary<int, Row>> GetNodes()
+    public SortedList<int, Dictionary<int, NewAgeRow>> GetNodes()
     {
-        return _internalNodes;
+        var nodes = new SortedList<int, Dictionary<int, NewAgeRow>>();
+        foreach (var node in _internalNodes)
+        {
+            var dictionaries = new Dictionary<int, NewAgeRow>();
+            node.Value.Values.ToList().ForEach(row =>
+            {
+                dictionaries.Add( 
+                    (int) row.DynamicColumns["Id"], 
+                        new() { DynamicColumns = row.DynamicColumns  }
+                );
+            });
+            nodes.Add(node.Key, dictionaries);
+        }
+        return nodes;
     }
 
     public List<string> PrintBTree()

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using TddSqlLite.Database.Internals;
 
 namespace TddSqlLite.Database;
@@ -15,14 +16,19 @@ public class Table
         _tableName = tableName;
         _dbFileHandler = new DbTableFileHandler(tableName + ".txt");
         var existingData = _dbFileHandler.ReadFromDb();
-        var rows = existingData.Select(x =>  
-            JsonSerializer.Deserialize<Row[]>(x))
-            .ToList();
+        var rows = TransformDbToRows(existingData);
         if (rows.Count > 0)
         {
             var insertRows = rows.SelectMany(x => x.ToList()).ToList();
             insertRows.ForEach(SerializeRow);
         }
+    }
+
+    public static List<Row[]> TransformDbToRows(string[] existingData)
+    {
+        var transformDbToRows = existingData.Select(x => 
+            JsonSerializer.Deserialize<Row[]>(x)).ToList();
+        return transformDbToRows;
     }
 
     public Table(IDbFileHandler dbFileHandler, string tableName)
@@ -38,14 +44,14 @@ public class Table
             throw new Exception("Id must be a positive number");
         }
 
-        if (row.username.Length > 255)
+        if (row.username is { Length: > 255 })
         {
             throw new Exception("username string too many characters.");
         }
 
-        if (row.email.Length > 255)
+        if (row.email is { Length: > 255 })
         {
-            throw new Exception("username string too many characters.");
+            throw new Exception("email string too many characters.");
         }
 
         _pager.AppendPage(row);

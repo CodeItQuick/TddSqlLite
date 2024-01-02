@@ -1,85 +1,101 @@
+using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
+using System.Xml;
 
 namespace TddSqlLite.Database;
 
-public class Row
+public class Row 
 {
-    [JsonIgnore]
-    public Dictionary<string, string>? StringColumns { get; set; }
-    [JsonIgnore]
-    public Dictionary<string, int>? IntColumns { get; init; }
-    private int _id;
+
+    [JsonExtensionData()] 
+    public Dictionary<string, object>? DynamicColumns { get; set; } = new();
     public int Id
     {
         get
         {
-            int idColumn = 0;
-            var idExists = IntColumns?.TryGetValue("Id", out idColumn);
+            object idColumn = 0;
+            var idExists = DynamicColumns?.TryGetValue("Id", out idColumn);
             if (idExists is true)
             {
-                return idColumn;
+                return idColumn is int column ? column : 0;
             }
-            return _id;
+            return default;
         }
         set
         {
-            _id = value;
-            int idColumn = 0;
-            var idExists = IntColumns?.TryGetValue("Id", out idColumn);
-            if (idExists is true)
+            
+            object idColumn = 0;
+            var idExists = DynamicColumns?.TryGetValue("Id", out idColumn);
+            if (idExists is false)
             {
-                _id = idColumn;
-            }
+                DynamicColumns?.TryAdd("Id", value);
+            } 
         }
     }
 
-    private string _username;
-    public string username 
+    public string? username 
     {
         get
         {
-            string idColumn = "";
-            var idExists = StringColumns?.TryGetValue("username", out idColumn);
+            object idColumn = new string("");
+            var idExists = DynamicColumns?.TryGetValue("username", out idColumn);
             if (idExists is true)
             {
-                return idColumn;
+                return idColumn as string ?? string.Empty;
             }
-            return _username;
+            return default;
         }
         set
         {
-            _username = value;
-            string idColumn = "";
-            var idExists = StringColumns?.TryGetValue("username", out idColumn);
-            if (idExists is true)
+            if (value is { Length: > 255 })
             {
-                _username = idColumn;
+                throw new Exception("Varchar too long");
+            }
+
+            object idColumn = "";
+            var idExists = DynamicColumns?.TryGetValue("username", out idColumn);
+            if (idExists is false)
+            {
+                DynamicColumns?.TryAdd("username", value ?? string.Empty);
             }
         }
     }
 
-    private string _email;
-    public string email 
+    public string? email 
     { 
         get
         {
-            string idColumn = "";
-            var idExists = StringColumns?.TryGetValue("email", out idColumn);
+            object idColumn = new string("");
+            var idExists = DynamicColumns?.TryGetValue("email", out idColumn);
             if (idExists is true)
             {
-                return idColumn;
+                return idColumn as string ?? string.Empty;
             }
-            return _email;
+            return default;
         }
         set
         {
-            _email = value;
-            string idColumn = "";
-            var idExists = StringColumns?.TryGetValue("email", out idColumn);
-            if (idExists is true)
+            if (value is { Length: > 255 })
             {
-                _username = idColumn;
+                throw new Exception("Varchar too long");
+            }
+            if (value is { Length: > 255 })
+            {
+                throw new Exception("Varchar too long");
+            }
+
+            object idColumn = "";
+            var idExists = DynamicColumns?.TryGetValue("email", out idColumn);
+            if (idExists is false)
+            {
+                DynamicColumns?.TryAdd("email", value ?? string.Empty);
             }
         } 
     }
+}
+
+public class NewAgeRow
+{
+    [JsonExtensionData()] 
+    public Dictionary<string, object>? DynamicColumns { get; set; } = new();
 }

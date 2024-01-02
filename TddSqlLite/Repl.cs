@@ -100,20 +100,29 @@ public class Repl
                     continue;
             }
 
-            switch (ExecuteStatement(statement, command))
+            try
             {
-                case EXECUTE.SUCCESS:
-                    _writeLine.Print("Executed.");
-                    break;
-                case EXECUTE.INSERT_ROW_FAIL:
-                    _writeLine.Print("Failed to Insert Row. Already Exists.");
-                    break;
-                case EXECUTE.SELECT_MISSING_TABLE_FAIL:
-                    _writeLine.Print("Failed to Select Table. Table does not exist.");
-                    break;
-                case EXECUTE.TABLE_FULL:
-                    _writeLine.Print("Table is Full.");
-                    break;
+                var executeStatement = ExecuteStatement(statement, command);
+                switch (executeStatement)
+                {
+                    case EXECUTE.SUCCESS:
+                        _writeLine.Print("Executed.");
+                        break;
+                    case EXECUTE.INSERT_ROW_FAIL:
+                        _writeLine.Print("Failed to Insert Row. Already Exists.");
+                        break;
+                    case EXECUTE.SELECT_MISSING_TABLE_FAIL:
+                        _writeLine.Print("Failed to Select Table. Table does not exist.");
+                        break;
+                    case EXECUTE.TABLE_FULL:
+                        _writeLine.Print("Table is Full.");
+                        break;
+                }
+            }
+            catch
+            {
+                _writeLine.Print("Parse Error - could not read statement.");
+                continue;
             }
 
         } while (_commands.Count > 0);
