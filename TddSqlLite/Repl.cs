@@ -46,14 +46,16 @@ public class Repl
         _consoleInputWrapper = consoleInputWrapper;
         _tableFileHandler = new DbTableFileHandler(databaseFileName);
         _table = new Table("database"); // FIXME hardcoded
-        _tables = new[] { _table };
+        var systemTable = new Table("system");
+        _tables = new[] { _table, systemTable };
     }
     public Repl(IConsoleWriteLineWrapper writeLine, IConsoleInputWrapper consoleInputWrapper, Table table, IDbFileHandler fakeDbFileHandler)
     {
         _writeLine = writeLine;
         _consoleInputWrapper = consoleInputWrapper;
         _table = table;
-        _tables = new[] { _table };
+        var systemTable = new Table("system");
+        _tables = new[] { _table, systemTable };
         _tableFileHandler = fakeDbFileHandler;
     }
 
@@ -148,9 +150,24 @@ public class Repl
                     .Substring(createStartTableName, createTableStringLength)
                     .Trim();
                 _tableFileHandler.InjectFilename(createTableName + ".txt");
+                var newTable = new Table(_tableFileHandler, createTableName);
                 _tables = _tables
-                    .Append(new Table(_tableFileHandler, createTableName))
+                    .Append(newTable)
                     .ToArray();
+                if (createTableName != "system")
+                {
+                    var systemTable = _tables.ToList().First(x => x.IsTableName("system"));
+                    systemTable.CreateCursorEnd();
+                    var lastRow = systemTable.SelectRow();
+                    systemTable.SerializeRow(new Row()
+                    {
+                        DynamicColumns = new Dictionary<string, object>()
+                        {
+                            ["Id"] = (lastRow?.Id ?? 0) + 1,
+                            ["TableName"] = createTableName
+                        }
+                    });
+                }
                 return EXECUTE.SUCCESS;
             case STATEMENTS.INSERT_INTO or STATEMENTS.INSERT:
                 string[] commands;
@@ -194,21 +211,47 @@ public class Repl
             case STATEMENTS.SELECT:
                 
                 var selectedTable = command.Split(" ")[^1];
+                Table? selectTable = null;
                 try
                 {
-                    insertIntoTable = _tables.First(table => table.IsTableName(selectedTable));
+                    var systemTable = _tables.First(table => table.IsTableName("system"));
+                    var systemNumRows  = systemTable.CreateCursorStart();
+                    for (int i = 0; i < systemNumRows; i++)
+                    {
+                        
+                        var row = systemTable.SelectRow();
+                        var tableName = row.DynamicColumns.Skip(1).First().Value.ToString();
+                        if (tableName == selectedTable)
+                        {
+                            var newTables = new Table(tableName);
+                            _tables = _tables.Append(newTables).ToArray();
+                        }
+                        systemTable.AdvanceCursor();
+                    }
+                    
+                    selectTable = _tables.First(table => table.IsTableName(selectedTable));
                 }
                 catch
                 {
                     return EXECUTE.SELECT_MISSING_TABLE_FAIL;
                 }
-                _writeLine.Print("Id\tusername\temail");
-                var numRows = insertIntoTable.CreateCursorStart();
+
+                var numRows = selectTable.CreateCursorStart();
+                var header = selectTable.SelectRow();
+                if (header == null)
+                {
+                    _writeLine.Print("Empty Table");
+                    return EXECUTE.SUCCESS;
+                }
+                _writeLine.Print($"Id\t{header.DynamicColumns.Skip(1).First().Key}\t" +
+                                 $"{header.DynamicColumns.Skip(2).First().Key}");
                 for (var rowIdx = 0; rowIdx < numRows; rowIdx++)
                 {
-                    var row = insertIntoTable.SelectRow();
-                    _writeLine.Print($"{row.Id}\t{row.username}\t{row.email}");
-                    insertIntoTable.AdvanceCursor();
+                    var row = selectTable.SelectRow();
+                    _writeLine.Print($"{row.DynamicColumns["Id"]}\t" +
+                                            $"{row.DynamicColumns.Skip(1).First().Value}\t" +
+                                            $"{row.DynamicColumns.Skip(2).First().Value}");
+                    selectTable.AdvanceCursor();
                 }
                 return EXECUTE.SUCCESS;
             default:

@@ -444,7 +444,7 @@ public class TableTests
         var table = new Table(fakeDbFileHandler, "user");
         var row = new Row()
             {
-                DynamicColumns = new System.Collections.Generic.Dictionary<string, object>()
+                DynamicColumns = new Dictionary<string, object>()
                 {
                     ["CustomProperty"] = "test_property"
                 }, 
@@ -455,5 +455,25 @@ public class TableTests
         var readAllLines = string.Concat(fakeDbFileHandler.ReadFromDb());
         Assert.Equivalent(
             "[{\"CustomProperty\":\"test_property\",\"Id\":1}]", readAllLines, true);
+    }
+    [Fact]
+    public void CanConstructSystemTable()
+    {
+        var fakeDbFileHandler = new FakeDbFileHandler();
+        var table = new Table(fakeDbFileHandler, "system");
+        var row = new Row()
+        {
+            DynamicColumns = new Dictionary<string, object>()
+            {
+                ["TableName"] = "enteredtable"
+            }, 
+            Id = 1
+        };
+        
+        table.SerializeRow(row);
+
+        var readAllLines = string.Concat(fakeDbFileHandler.ReadFromDb());
+        Assert.Equivalent(
+            "[{\"TableName\":\"enteredtable\",\"Id\":1}]", readAllLines, true);
     }
 }

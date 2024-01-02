@@ -226,7 +226,9 @@ public class ReplTests
             "sqlite> ", // enter create statement
             IntroText // intro text
         }, retrieveMessage.ToList(), true);
-    }[Fact]
+    }
+
+    [Fact]
     public void DoesNotCrashOnBadCreateInput()
     {
         var writeLineWrapper = new FakeConsoleWriteLineWrapper();
@@ -256,6 +258,7 @@ public class ReplTests
             IntroText // intro text
         }, retrieveMessage.ToList(), true);
     }
+
     [Fact]
     public void CanSelectFromNewTableAfterInsert()
     {
@@ -294,6 +297,7 @@ public class ReplTests
             IntroText // intro text
         }, retrieveMessage.ToList(), true);
     }
+
     [Fact]
     public void CanRetrieveInsertedRowAfterClosingRepl()
     {
@@ -423,7 +427,7 @@ public class ReplTests
         Assert.Equal(2, retrieveMessage.Count(x => x == "sqlite> ")); // two of these
         Assert.Equal(4, retrieveMessage.Count);
     }
-    
+
     [Fact]
     public void InsertNonContiguousRowsDoesNotCrashOnSelect()
     {
@@ -450,5 +454,40 @@ public class ReplTests
             IntroText // intro text
         }, retrieveMessage.ToList());
         Assert.Equal(11, retrieveMessage.Count);
+    }
+    [Fact]
+    public void CanCreateTableExitAndStillSelectTable()
+    {
+        
+        var databaseTableFilename = @"tablesCanRetrieveAfterClosed";
+        string fullPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), 
+            databaseTableFilename);
+        File.WriteAllText(fullPath + ".txt", "", Encoding.UTF8);
+        var writeLineWrapper = new FakeConsoleWriteLineWrapper();
+        var commands = new Stack<string>();
+        commands.Push(".exit"); // exit
+        commands.Push("CREATE TABLE RetrievableTable (id int, username varchar, email varchar)");
+        var table = new Table(databaseTableFilename);
+        var repl = new Repl(writeLineWrapper, new FakeConsoleInputWrapper(commands), table, new FakeDbFileHandler());
+        var writeLineWrapperRetrieval = new FakeConsoleWriteLineWrapper();
+        var commandsRetrieval = new Stack<string>();
+        commandsRetrieval.Push(".exit"); // exit
+        commandsRetrieval.Push("SELECT * FROM RetrievableTable");
+        var replRetrieve = new Repl(writeLineWrapperRetrieval, new FakeConsoleInputWrapper(commandsRetrieval), table, new FakeDbFileHandler());
+        repl.Start();
+
+        replRetrieve.Start();
+
+        var retrieveMessage = writeLineWrapperRetrieval.RetrieveMessage();
+        Assert.Contains(IntroText, retrieveMessage);
+        Assert.Equivalent(new List<string>()
+        {
+            "sqlite> ", // enter .exit
+            "Executed.",
+            "Empty Table",
+            "sqlite> ", // enter select statement
+            IntroText // intro text
+        }, retrieveMessage.ToList(), true);
     }
 }
