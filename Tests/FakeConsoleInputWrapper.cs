@@ -4,18 +4,25 @@ namespace Tests;
 
 public class FakeConsoleInputWrapper : ConsoleInputWrapper
 {
-    private readonly Stack<string> _commands;
+    private List<string> _commands;
 
-    public FakeConsoleInputWrapper(Stack<string> commands)
+
+    public FakeConsoleInputWrapper(List<string> commands)
     {
         _commands = commands;
     }
 
     public override string? WaitForInput()
     {
-        var tryPop = _commands.TryPop(out var command);
-        _currentCommand = command;  
+        if (_commands.Any())
+        {
+            var command = _commands.First();
+            _commands = _commands.Skip(1).ToList();
+            _currentCommand = command;  
+            return _currentCommand;
+        }
 
-        return _currentCommand;
+        return "";
+
     }
 }

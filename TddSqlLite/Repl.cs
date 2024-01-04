@@ -70,7 +70,8 @@ public class Repl
             _writeLine.Print("sqlite> ");
             _consoleInputWrapper.WaitForInput();
             var currentCommandStack = _consoleInputWrapper.RetrieveRunCommands();
-            var command = currentCommandStack.Peek();
+            var command = currentCommandStack.Last();
+            _commands = new Stack<string>();
             _commands.Push(command);
 
             if (command.StartsWith("."))

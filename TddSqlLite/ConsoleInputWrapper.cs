@@ -4,7 +4,7 @@ namespace TddSqlLite;
 
 public class ConsoleInputWrapper : IConsoleInputWrapper
 {
-    private readonly Stack<string> _consoleInput = new();
+    private readonly List<string> _consoleInput = new();
     protected string? _currentCommand;
 
     public virtual string? WaitForInput()
@@ -14,11 +14,11 @@ public class ConsoleInputWrapper : IConsoleInputWrapper
     }
 
 
-    public Stack<string> RetrieveRunCommands()
+    public List<string> RetrieveRunCommands()
     {
         if (!string.IsNullOrEmpty(_currentCommand))
         {
-            _consoleInput.Push(_currentCommand);
+            _consoleInput.Add(_currentCommand);
         }
         return _consoleInput;
     }

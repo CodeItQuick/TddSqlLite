@@ -34,14 +34,14 @@ public class BTree
         _internalNodes = new SortedList<int, Dictionary<int, Row>>();
         // 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 # total nodes
         // 1, 1, 2, 2, 3, 3, 3, 3, 3, 4  # internal leaf nodes
-        var stepSize = sortedNodes.Count < 4 ? 2 : int.Parse("" + Math.Ceiling(Math.Sqrt(sortedNodes.Count)));
+        var stepSize = sortedNodes.Count < 4 ? 2 : 
+            int.Parse("" + Math.Ceiling(Math.Sqrt(sortedNodes.Count)));
         for (var i = 0; i < sortedNodes.Count; i += stepSize)
         {
             var dictionary = new Dictionary<int, Row>();
             var maxNodeSize = 2;
             var lastIndex = sortedNodes
                 .Where((x, idx) => idx < i + stepSize)
-                .Select((x, idx) => x)
                 .Count();
             var range = Enumerable.Range(i, lastIndex - i).ToList();
             range.ForEach(
